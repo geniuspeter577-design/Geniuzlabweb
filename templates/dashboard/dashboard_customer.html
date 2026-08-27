@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | GeniuzLab{% endblock %}
+{% block content %}
+<section class="dashboard">
+
+    {% with dash_subtitle="Manage your orders, wallet and hires from here." %}
+        {% include "dashboard/_dash_header.html" %}
+    {% endwith %}
+
+    {% include "partials/bible_verse_widget.html" %}
+
+    <nav class="dash-tabs">
+        <button class="dash-tab active" data-target="tab-overview"><i class="fas fa-th-large"></i> Overview</button>
+        <button class="dash-tab" data-target="tab-profile"><i class="fas fa-user"></i> Profile</button>
+        <button class="dash-tab" data-target="tab-wallet"><i class="fas fa-wallet"></i> Wallet</button>
+        <button class="dash-tab" data-target="tab-orders"><i class="fas fa-receipt"></i> Orders <span class="tab-count">{{ orders|length }}</span></button>
+        <button class="dash-tab" data-target="tab-saved"><i class="fas fa-bookmark"></i> Saved Creatives <span class="tab-count">{{ saved_creatives|length }}</span></button>
+        <button class="dash-tab" data-target="tab-hire"><i class="fas fa-user-friends"></i> Hire Creative</button>
+        <button class="dash-tab" data-target="tab-messages"><i class="fas fa-comments"></i> Messages</button>
+        <button class="dash-tab" data-target="tab-notifications"><i class="fas fa-bell"></i> Notifications <span class="tab-count">{{ unread_notifications }}</span></button>
+        <button class="dash-tab" data-target="tab-settings"><i class="fas fa-cog"></i> Settings</button>
+    </nav>
+
+    <!-- OVERVIEW -->
+    <div class="dash-panel active" id="tab-overview">
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <h3>Wallet Balance</h3>
+                <h2>₦{{ wallet_balance }}</h2>
+                <p><a href="{% url 'wallet_home' %}">View wallet →</a></p>
+            </div>
+            <div class="dashboard-card">
+                <h3>Orders Placed</h3>
+                <h2>{{ orders|length }}</h2>
+                <p><a href="{% url 'my_service_requests' %}">View all →</a></p>
+            </div>
+            <div class="dashboard-card">
+                <h3>Saved Creatives</h3>
+                <h2>{{ saved_creatives|length }}</h2>
+                <p>Bookmarked for later</p>
+            </div>
+            <div class="dashboard-card">
+                <h3>Messages</h3>
+                <h2>{{ conversations_count }}</h2>
+                <p><a href="{% url 'inbox' %}">Open inbox →</a></p>
+            </div>
+        </div>
+
+        <div class="dashboard-section">
+            <h2>Quick Actions</h2>
+            <div class="quick-actions">
+                <a href="{% url 'hire_creative' %}" class="quick-action"><i class="fas fa-user-friends"></i><span>Hire a Creative</span></a>
+                <a href="{% url 'jobs' %}" class="quick-action"><i class="fas fa-briefcase"></i><span>Post / Browse Jobs</span></a>
+                {% if FEATURE_VTU_ENABLED %}
+                <a href="{% url 'initiate_payment' %}" class="quick-action"><i class="fas fa-wallet"></i><span>Fund Wallet</span></a>
+                <a href="{% url 'vtu_home' %}" class="quick-action"><i class="fas fa-bolt"></i><span>Buy Airtime/Data</span></a>
+                {% endif %}
+                <a href="{% url 'edit_creative_profile' %}" class="quick-action"><i class="fas fa-magic"></i><span>Become a Creative</span></a>
+                <a href="{% url 'edit_profile' %}" class="quick-action"><i class="fas fa-user-cog"></i><span>Edit Profile</span></a>
+            </div>
+        </div>
+
+        {% include "dashboard/_dash_activity.html" %}
+    </div>
+
+    <!-- PROFILE -->
+    <div class="dash-panel" id="tab-profile">
+        <div class="dashboard-section">
+            <h2>Profile</h2>
+            <div class="glass-card">
+                <div class="dash-welcome-left" style="margin-bottom:20px;">
+                    <div class="avatar-circle avatar-lg">{% if user.display_avatar_url %}<img src="{{ user.display_avatar_url }}" alt="Profile avatar">{% else %}{{ user.username|first|upper }}{% endif %}</div>
+                    <div>
+                        <h3 style="margin-bottom:4px;">{{ user.first_name|default:user.username }} {{ user.last_name }}</h3>
+                        <p style="color:var(--gl-text-muted);">{{ user.email }}{% if user.phone %} · {{ user.phone }}{% endif %}</p>
+                        {% if customer_profile and customer_profile.company_name %}<p style="color:var(--gl-text-muted);">{{ customer_profile.company_name }} · {{ customer_profile.get_profile_type_display }}</p>{% endif %}
+                    </div>
+                </div>
+                <p>{{ user.bio|default:"No bio added yet." }}</p>
+                <div class="progress-track"><div class="progress-fill" style="width:{{ profile_completion }}%;"></div></div>
+                <p style="color:var(--gl-text-muted);font-size:13px;margin-bottom:16px;">{{ profile_completion }}% complete</p>
+                <a href="{% url 'edit_profile' %}" class="btn-outline btn-sm">Edit Profile</a>
+                <a href="{% url 'edit_customer_profile' %}" class="btn-outline btn-sm">Business Profile</a>
+                <a href="{% url 'edit_creative_profile' %}" class="btn-outline btn-sm">Become a Creative</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- WALLET -->
+    <div class="dash-panel" id="tab-wallet">
+        <div class="dashboard-section">
+            <h2>Wallet</h2>
+            <div class="dashboard-card" style="margin-bottom:25px;">
+                <h3>Available Balance</h3>
+                <h2>₦{{ wallet_balance }}</h2>
+                <p>{% if FEATURE_VTU_ENABLED %}<a href="{% url 'initiate_payment' %}">Fund wallet →</a> &nbsp;·&nbsp; {% endif %}<a href="{% url 'wallet_home' %}">Full history →</a></p>
+            </div>
+            {% for e in wallet_entries %}
+            <div class="mini-card">
+                <div class="mini-info">
+                    <h4>{{ e.get_type_display }} — ₦{{ e.amount }}</h4>
+                    <p>{{ e.description|default:"Wallet transaction" }} · {{ e.created_at|date:"M d, Y H:i" }}</p>
+                </div>
+                <span class="badge {% if e.type == 'credit' %}badge-green{% else %}badge-red{% endif %}">{{ e.get_type_display }}</span>
+            </div>
+            {% empty %}
+            <div class="empty-state"><i class="fas fa-wallet"></i><p>No wallet activity yet.</p></div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="dash-panel" id="tab-orders">
+        <div class="dashboard-section">
+            <h2>Orders</h2>
+            {% for order in orders %}
+            <div class="mini-card">
+                <div class="avatar-circle">{% if order.creative.user.display_avatar_url %}<img src="{{ order.creative.user.display_avatar_url }}" alt="Profile avatar">{% else %}{{ order.creative.user.username|first|upper }}{% endif %}</div>
+                <div class="mini-info">
+                    <h4><a href="{% url 'public_profile' order.creative.user.username %}" style="color:inherit;">{{ order.creative.user.username }}</a> — {{ order.creative.get_category_display }}</h4>
+                    <p>{{ order.message|truncatechars:80 }} · {{ order.created_at|date:"M d, Y" }}</p>
+                </div>
+                <div class="mini-actions">
+                    <span class="badge {% if order.status == 'completed' %}badge-green{% elif order.status == 'declined' %}badge-red{% elif order.status == 'accepted' %}badge-yellow{% else %}badge-grey{% endif %}">{{ order.get_status_display }}</span>
+                    {% if order.status == 'completed' %}
+                    {% if order.review %}
+                    <span class="stars">{% for i in "12345" %}{% if forloop.counter <= order.review.rating %}★{% else %}<span class="dim">★</span>{% endif %}{% endfor %}</span>
+                    {% else %}
+                    <form method="post" action="{% url 'leave_review' order.pk %}" style="display:inline-flex;gap:6px;align-items:center;">
+                        {% csrf_token %}
+                        <select name="rating" class="form-group" style="padding:4px 8px;">
+                            <option value="5">5★</option><option value="4">4★</option><option value="3">3★</option><option value="2">2★</option><option value="1">1★</option>
+                        </select>
+                        <button type="submit" class="btn-outline btn-sm">Leave Review</button>
+                    </form>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state"><i class="fas fa-receipt"></i><p>No orders yet — <a href="{% url 'hire_creative' %}">hire a creative</a> to get started.</p></div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- SAVED CREATIVES -->
+    <div class="dash-panel" id="tab-saved">
+        <div class="dashboard-section">
+            <h2>Saved Creatives</h2>
+            {% for saved in saved_creatives %}
+            <div class="mini-card">
+                <div class="avatar-circle">{% if saved.creative.user.display_avatar_url %}<img src="{{ saved.creative.user.display_avatar_url }}" alt="Profile avatar">{% else %}{{ saved.creative.user.username|first|upper }}{% endif %}</div>
+                <div class="mini-info">
+                    <h4><a href="{% url 'public_profile' saved.creative.user.username %}" style="color:inherit;">{{ saved.creative.user.username }}</a></h4>
+                    <p>{{ saved.creative.headline|default:saved.creative.get_category_display }}</p>
+                </div>
+                <div class="mini-actions">
+                    <a href="{% url 'creative_detail' saved.creative.pk %}" class="btn-outline btn-sm">View</a>
+                    <form method="post" action="{% url 'toggle_saved_creative' saved.creative.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-outline btn-sm">Remove</button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state"><i class="fas fa-bookmark"></i><p>Save creatives you like from their profile page to find them here later.</p></div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- HIRE CREATIVE -->
+    <div class="dash-panel" id="tab-hire">
+        <div class="dashboard-section">
+            <h2>Hire a Creative</h2>
+            <div class="glass-card">
+                <h3>Browse GeniuzLab's vetted creatives</h3>
+                <p>Graphic designers, video editors, web developers and AI specialists — ready to work.</p>
+                <a href="{% url 'hire_creative' %}" class="btn-outline btn-sm" style="margin-top:14px;display:inline-block;">Browse Creatives</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="dash-panel" id="tab-messages">
+        <div class="dashboard-section">
+            <h2>Messages</h2>
+            <div class="empty-state"><i class="fas fa-comments"></i><p>You have {{ conversations_count }} conversation{{ conversations_count|pluralize }}.</p></div>
+            <a href="{% url 'inbox' %}" class="btn-outline btn-sm">Open Inbox</a>
+        </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="dash-panel" id="tab-notifications">
+        <div class="dashboard-section">
+            <h2>Notifications</h2>
+            {% for n in notifications_preview %}
+            <div class="list-row {% if not n.is_read %}list-row-unread{% endif %}">
+                <div>{{ n.message }}<p style="color:var(--gl-text-muted);font-size:13px;">{{ n.created_at|date:"M d, Y H:i" }}</p></div>
+                {% if not n.is_read %}<span class="badge badge-green">New</span>{% endif %}
+            </div>
+            {% empty %}
+            <div class="empty-state"><i class="fas fa-bell"></i><p>You're all caught up.</p></div>
+            {% endfor %}
+            <a href="{% url 'notifications' %}" class="btn-outline btn-sm">View all notifications</a>
+        </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="dash-panel" id="tab-settings">
+        <div class="dashboard-section">
+            <h2>Settings</h2>
+            <div class="quick-actions">
+                <a href="{% url 'edit_profile' %}" class="quick-action"><i class="fas fa-user-cog"></i><span>Account Details</span></a>
+                <a href="{% url 'notification_preferences' %}" class="quick-action"><i class="fas fa-bell"></i><span>Notification Preferences</span></a>
+                {% if FEATURE_VTU_ENABLED %}
+                <a href="{% url 'wallet_home' %}" class="quick-action"><i class="fas fa-wallet"></i><span>Wallet Settings</span></a>
+                {% endif %}
+                <a href="{% url 'logout' %}" class="quick-action"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></a>
+            </div>
+        </div>
+    </div>
+
+</section>
+{% include "dashboard/_dash_tabs_script.html" %}
+{% endblock %}

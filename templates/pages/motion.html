@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}GENIUZinMOTION | GeniuzLab{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="hero-left">
+        <p class="tag">🎬 A GeniuzLab Brand</p>
+        <h1>GENIUZ<br><span>inMOTION</span></h1>
+        <p class="description">
+            Cinematic video editing, motion graphics and storytelling —
+            powered by GeniuzLab's creative video professionals.
+        </p>
+        <div class="hero-buttons">
+            <a href="{% url 'hire_creative' %}?category=video_editing" class="btn">Hire an Editor</a>
+            <a href="{% url 'video_editing' %}" class="btn-outline">Learn the Skill →</a>
+        </div>
+    </div>
+    <div class="hero-right">
+        <div class="logo-glow">
+            <div class="glow-circle"></div>
+            <img src="{% static 'images/generated/hero_motion.png' %}" alt="GENIUZinMOTION">
+        </div>
+    </div>
+</section>
+
+<section class="about hidden">
+    <div class="about-content">
+        <p class="tag">What We Do</p>
+        <h2>Every Frame Tells <span>A Story</span></h2>
+        <p>
+            GENIUZinMOTION connects brands and creators with skilled video
+            editors for reels, YouTube content, ads and motion graphics —
+            edited to a premium, cinematic standard.
+        </p>
+    </div>
+</section>
+
+<section class="ecosystem hidden">
+    <div class="eco-header">
+        <p class="tag">Services</p>
+        <h2>What <span>GENIUZinMOTION</span> Offers</h2>
+    </div>
+    <div class="eco-grid">
+        <div class="eco-card">
+            <div class="eco-icon">🎞️</div>
+            <h3>Short-Form Editing</h3>
+            <p>Reels, TikToks and Shorts edited for retention and reach.</p>
+        </div>
+        <div class="eco-card">
+            <div class="eco-icon">📺</div>
+            <h3>YouTube Production</h3>
+            <p>Long-form editing, thumbnails and channel storytelling.</p>
+        </div>
+        <div class="eco-card">
+            <div class="eco-icon">✨</div>
+            <h3>Motion Graphics</h3>
+            <p>Animated titles, transitions and branded intros/outros.</p>
+        </div>
+        <div class="eco-card">
+            <div class="eco-icon">📢</div>
+            <h3>Ad Creatives</h3>
+            <p>High-converting video ads for social and marketplace campaigns.</p>
+        </div>
+    </div>
+</section>
+
+<section class="portfolio hidden">
+    <div class="portfolio-header">
+        <p class="tag">Recent Work</p>
+        <h2>From The <span>Editing Room</span></h2>
+    </div>
+    {% if showcase %}
+    <div class="portfolio-grid">
+        {% for item in showcase %}
+        <div class="portfolio-card">
+            {% if item.thumbnail %}
+                <img src="{{ item.thumbnail.url }}" alt="{{ item.title }}">
+            {% endif %}
+            <div class="portfolio-content">
+                {% if not item.thumbnail %}<div class="portfolio-icon"><i class="fas fa-film"></i></div>{% endif %}
+                <h3>{{ item.title }}</h3>
+                <p>{{ item.description }}</p>
+                {% if item.video_url %}<a href="{{ item.video_url }}" class="btn-outline" target="_blank">Watch →</a>{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-film"></i>
+        <p>Fresh edits are on the way — check back soon to see recent work from our editing room.</p>
+    </div>
+    {% endif %}
+</section>
+
+<section id="contact" class="cta hidden">
+    <div class="cta-content">
+        <p class="tag">Get Started</p>
+        <h2>Ready To Bring Your <span>Story To Life?</span></h2>
+        <div class="hero-buttons">
+            <a href="{% url 'hire_creative' %}?category=video_editing" class="btn">Browse Editors</a>
+            <a href="{% url 'post_job' %}" class="btn-outline">Post a Video Job</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Hire a Creative | GeniuzLab{% endblock %}
+
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>Hire a Creative</h1>
+        <p>Connect with professional designers, video editors, developers and AI specialists.</p>
+    </div>
+
+    <form method="GET" style="margin-bottom:25px;display:flex;gap:12px;flex-wrap:wrap;">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search creatives..." style="flex:1;min-width:220px;padding:14px 16px;border-radius:10px;border:1px solid var(--gl-ov-12);background:var(--gl-ov-04);color:var(--gl-text);">
+        <button type="submit" class="btn-primary">Search</button>
+    </form>
+
+    <div class="filter-bar">
+        <a href="{% url 'hire_creative' %}" class="{% if not selected_category %}active{% endif %}">All</a>
+        {% for value, label in categories %}
+        <a href="?category={{ value }}" class="{% if selected_category == value %}active{% endif %}">{{ label }}</a>
+        {% endfor %}
+    </div>
+
+    {% if creatives %}
+    <div class="card-grid">
+        {% for creative in creatives %}
+        <a href="{% url 'creative_detail' creative.pk %}" class="glass-card" style="text-decoration:none;color:inherit;display:block;">
+            <div class="avatar-circle" style="margin-bottom:15px;">
+                {% if creative.user.display_avatar_url %}<img src="{{ creative.user.display_avatar_url }}" alt="Profile avatar">{% else %}{{ creative.user.username|first|upper }}{% endif %}
+            </div>
+            <h3>{{ creative.headline|default:creative.user.username }}</h3>
+            <span class="badge badge-green">{{ creative.get_category_display }}</span>
+            <p style="margin-top:10px;">{{ creative.bio|truncatechars:90 }}</p>
+            {% if creative.hourly_rate %}<p style="color:#7ED957;font-weight:600;">₦{{ creative.hourly_rate }}/hr</p>{% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-user-friends"></i>
+        <p>No creatives found yet for this filter. Be the first to <a href="{% url 'edit_creative_profile' %}" style="color:#7ED957;">register as a creative</a>.</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

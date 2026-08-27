@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ project.title }} | GeniuzLab Projects{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <p class="tag">{{ project.tag }}</p>
+        <h1>{{ project.title }}</h1>
+        <p>{{ project.summary }}</p>
+    </div>
+
+    <div class="glass-card" style="max-width:900px;margin:0 auto 40px;">
+        <img src="{% static project.image %}" alt="{{ project.title }} showcase" style="width:100%;border-radius:16px;margin-bottom:24px;">
+        <ul style="line-height:2;color:var(--gl-text-soft);padding-left:20px;">
+            {% for point in project.details %}
+            <li>{{ point }}</li>
+            {% endfor %}
+        </ul>
+        <div class="hero-buttons" style="margin-top:20px;">
+            <a href="{% url project.service_url_name %}" class="btn">{{ project.service_label }}</a>
+            <a href="{% url 'projects' %}" class="btn-outline">Browse All Projects</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

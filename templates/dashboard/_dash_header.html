@@ -1,0 +1,21 @@
+{% load static %}
+<div class="dash-welcome glass-card">
+    <div class="dash-welcome-left">
+        <div class="avatar-circle avatar-lg">
+            {% if user.avatar %}<img src="{{ user.avatar.url }}" alt="Profile avatar">{% elif creative_profile.avatar %}<img src="{{ creative_profile.avatar.url }}" alt="Profile avatar">{% else %}{{ user.username|first|upper }}{% endif %}
+        </div>
+        <div>
+            <h1>Welcome back, {{ user.first_name|default:user.username|title }} 👋</h1>
+            <p>{{ dash_subtitle|default:"Manage your GeniuzLab account from here." }}</p>
+        </div>
+    </div>
+    <div class="dash-welcome-right">
+        <div class="completion-ring" style="--pct:{{ profile_completion }};">
+            <span>{{ profile_completion }}%</span>
+        </div>
+        <div>
+            <p class="completion-label">Profile complete</p>
+            {% if profile_completion < 100 %}<a href="{% url 'edit_profile' %}" class="btn-outline btn-sm">Finish setup</a>{% endif %}
+        </div>
+    </div>
+</div>

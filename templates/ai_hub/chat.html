@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{% if conversation %}{{ conversation.display_title }} | {% endif %}AI Chat | GeniuzLab{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/ai_hub.css' %}">
+{% endblock %}
+{% block content %}
+<section class="aihub-chatapp">
+    <button type="button" id="aihub-sidebar-toggle" class="aihub-sidebar-toggle" aria-label="Toggle conversation list">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <aside class="aihub-sidebar" id="aihub-sidebar">
+        <div class="aihub-sidebar-head">
+            <a href="{% url 'ai_hub' %}" class="aihub-sidebar-back" title="Back to AI Hub"><i class="fas fa-chevron-left"></i></a>
+            <form method="POST" action="{% url 'ai_hub_chat_new' %}" class="aihub-sidebar-new-form">
+                {% csrf_token %}
+                <button type="submit" class="aihub-sidebar-new"><i class="fas fa-plus"></i> New chat</button>
+            </form>
+        </div>
+        <div class="aihub-sidebar-list">
+            {% for conv in conversations %}
+            <a href="{% url 'ai_hub_chat_conversation' conv.pk %}"
+               class="aihub-sidebar-item {% if conversation and conv.pk == conversation.pk %}active{% endif %}">
+                <i class="fas fa-message"></i>
+                <span>{{ conv.display_title }}</span>
+            </a>
+            {% empty %}
+            <p class="aihub-sidebar-empty">No conversations yet</p>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <div class="aihub-chat-main">
+        {% if not chat_configured %}
+        <div class="aihub-notice aihub-notice-compact">
+            <i class="fas fa-exclamation-circle"></i>
+            <div>
+                <strong>Not set up yet.</strong>
+                <code>OPENAI_API_KEY</code> isn't configured on this server — see <code>.env.example</code>.
+            </div>
+        </div>
+        {% endif %}
+
+        {% if conversation %}
+        <div class="aihub-chat-topbar">
+            <h2 class="aihub-chat-title">{{ conversation.display_title }}</h2>
+            <form method="POST" action="{% url 'ai_hub_chat_delete' conversation.pk %}" onsubmit="return confirm('Delete this conversation?');">
+                {% csrf_token %}
+                <button type="submit" class="aihub-chat-delete" aria-label="Delete conversation"><i class="fas fa-trash"></i></button>
+            </form>
+        </div>
+
+        <div class="aihub-chat-window" id="aihub-chat-window">
+            {% for msg in chat_messages %}
+            <div class="aihub-chat-msg aihub-chat-msg-{{ msg.role }}" data-raw="{{ msg.content }}">
+                <div class="aihub-chat-avatar">
+                    {% if msg.role == "assistant" %}<i class="fas fa-robot"></i>{% else %}<i class="fas fa-user"></i>{% endif %}
+                </div>
+                <div class="aihub-chat-bubble" data-role="{{ msg.role }}"></div>
+            </div>
+            {% empty %}
+            <div class="aihub-chat-empty">
+                <i class="fas fa-comment-dots"></i>
+                <p>Start the conversation — ask anything from a logo brief to a line of code.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <form id="aihub-chat-form" class="aihub-chat-form">
+            {% csrf_token %}
+            <textarea id="aihub-chat-input" rows="1" maxlength="4000"
+                placeholder="Message AI Chat…"
+                {% if not chat_configured %}disabled{% endif %}></textarea>
+            <button type="submit" id="aihub-chat-send" aria-label="Send" {% if not chat_configured %}disabled{% endif %}>
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </form>
+        {% else %}
+        <div class="aihub-chat-landing">
+            <div class="aihub-chat-landing-icon"><i class="fas fa-robot"></i></div>
+            <h2>AI Chat</h2>
+            <p>Creative writing, business advice, design direction, video editing guidance, code, branding, and prompt engineering — with real conversation memory.</p>
+            <form method="POST" action="{% url 'ai_hub_chat_new' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn" {% if not chat_configured %}disabled{% endif %}>
+                    <i class="fas fa-plus"></i> Start a conversation
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+{% block extra_js %}
+{% if conversation %}
+<script>
+    window.GLAB_CHAT_SEND_URL = "{% url 'ai_hub_chat_send' conversation.pk %}";
+</script>
+{% endif %}
+<script src="{% static 'js/ai_hub_chat.js' %}"></script>
+{% endblock %}

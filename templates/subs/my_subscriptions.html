@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}My Subscriptions | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header"><h1>My Subscriptions</h1></div>
+    {% for sub in subs %}
+    <div class="list-row">
+        <div>
+            <strong>{{ sub.plan.name }}</strong> — ₦{{ sub.plan.price }}
+            <p style="color:var(--gl-text-muted);font-size:13px;">Started {{ sub.started_at|date:"M d, Y" }}</p>
+        </div>
+        <span class="badge badge-{% if sub.status == 'active' %}green{% elif sub.status == 'expired' %}red{% else %}yellow{% endif %}">{{ sub.get_status_display }}</span>
+    </div>
+    {% empty %}
+    <div class="empty-state"><i class="fas fa-bolt"></i><p>No subscriptions yet.</p><a href="{% url 'subs' %}" class="btn-primary">View Plans</a></div>
+    {% endfor %}
+</section>
+{% endblock %}

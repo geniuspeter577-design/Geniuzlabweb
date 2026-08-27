@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Search | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>Search</h1>
+        <p>Find creatives, projects, skills and categories across GeniuzLab.</p>
+    </div>
+
+    <form method="GET" style="margin-bottom:35px;display:flex;gap:12px;flex-wrap:wrap;">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search creatives, projects, skills..."
+               style="flex:1;min-width:220px;padding:14px 16px;border-radius:10px;border:1px solid var(--gl-ov-12);background:var(--gl-ov-04);color:var(--gl-text);">
+        <button type="submit" class="btn-primary">Search</button>
+    </form>
+
+    {% if query %}
+        {% if matched_categories %}
+        <h3 style="margin-bottom:14px;">Categories</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:35px;">
+            {% for value, label in matched_categories %}
+            <a href="{% url 'discover' %}?tab=latest&category={{ value }}" class="badge badge-green" style="text-decoration:none;">{{ label }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if skills %}
+        <h3 style="margin-bottom:14px;">Skills</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:35px;">
+            {% for skill in skills %}
+            <a href="{% url 'hire_creative' %}?q={{ skill.name }}" class="badge badge-grey" style="text-decoration:none;">{{ skill.name }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <h3 style="margin-bottom:14px;">Creatives</h3>
+        {% if creatives %}
+        <div class="card-grid" style="margin-bottom:35px;">
+            {% for creative in creatives %}
+            <a href="{% url 'public_profile' creative.user.username %}" class="glass-card" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:14px;">
+                <div class="avatar-circle">{% if creative.user.display_avatar_url %}<img src="{{ creative.user.display_avatar_url }}" alt="Profile avatar">{% else %}{{ creative.user.username|first|upper }}{% endif %}</div>
+                <div>
+                    <h4 style="margin-bottom:2px;">{{ creative.headline|default:creative.user.username }}</h4>
+                    <span class="badge badge-grey">{{ creative.get_category_display }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:var(--gl-text-muted);margin-bottom:35px;">No matching creatives.</p>
+        {% endif %}
+
+        <h3 style="margin-bottom:14px;">Projects</h3>
+        {% if projects %}
+        <div class="card-grid">
+            {% for project in projects %}
+            <a href="{% url 'project_detail' project.pk %}" class="glass-card" style="text-decoration:none;color:inherit;display:block;">
+                {% if project.preview_url %}<img src="{{ project.preview_url }}" alt="Portfolio preview" style="width:100%;border-radius:12px;margin-bottom:12px;">{% endif %}
+                <span class="badge badge-grey">{{ project.get_category_display }}</span>
+                <h3 style="margin-top:8px;">{{ project.title }}</h3>
+                <p style="color:var(--gl-text-muted);font-size:13px;">by {{ project.creative.user.username }}</p>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:var(--gl-text-muted);">No matching projects.</p>
+        {% endif %}
+    {% else %}
+    <div class="empty-state"><i class="fas fa-search"></i><p>Start typing to search GeniuzLab.</p></div>
+    {% endif %}
+</section>
+{% endblock %}

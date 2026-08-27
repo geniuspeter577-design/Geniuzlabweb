@@ -1,0 +1,311 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        (function(){
+            try{
+                var t = localStorage.getItem('gl-theme');
+                if(!t){ t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
+                if(t === 'light'){ document.documentElement.setAttribute('data-theme','light'); }
+            }catch(e){}
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}GeniuzLab | Home of Creative Professionals{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}GeniuzLab is home to creative professionals — learn at Geniuz Academy, hire and collaborate with creatives, and grow your portfolio.{% endblock %}">
+    <meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
+    <link rel="canonical" href="{% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}">
+
+    <meta property="og:site_name" content="GeniuzLab">
+    <meta property="og:title" content="{% block og_title %}GeniuzLab | Home of Creative Professionals{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}GeniuzLab is home to creative professionals — learn, get hired, and collaborate.{% endblock %}">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{% static 'images/logo.png' %}{% endblock %}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}GeniuzLab | Home of Creative Professionals{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}GeniuzLab is home to creative professionals — learn, get hired, and collaborate.{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{% static 'images/logo.png' %}{% endblock %}">
+
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/logo.png' %}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/assistant.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+  <div id="loader">
+
+    <img src="{% static 'images/logo.png' %}" alt="GeniuzLab">
+
+    <h2>GENIUZLAB</h2>
+
+    <div class="loader-bar">
+
+        <div class="loader-progress"></div>
+
+    </div>
+
+</div>
+
+<nav class="navbar">
+
+    <a href="{% url 'home' %}" class="logo">
+        <img src="{% static 'images/logo.png' %}" alt="GeniuzLab Logo">
+    </a>
+
+    <ul class="nav-links">
+        <li><a href="{% url 'home' %}">Home</a></li>
+       <li><a href="{% url 'home_feed' %}">Feed</a></li>
+       <li><a href="{% url 'discover' %}">Discover</a></li>
+       <li><a href="{% url 'hire_creative' %}">Hire</a></li>
+       <li><a href="{% url 'home' %}#academy">Academy</a></li>
+       <li><a href="{% url 'home' %}#testimonials">Reviews</a></li>
+       <li class="mobile-nav-actions">
+            <button type="button" id="gl-theme-toggle-mobile" class="mobile-btn-outline" aria-label="Toggle dark/light mode" style="display:flex;align-items:center;gap:8px;justify-content:center;">
+                <i class="fas fa-moon" id="gl-theme-icon-mobile"></i> <span id="gl-theme-label-mobile">Dark mode</span>
+            </button>
+            <form method="GET" action="{% url 'search' %}" style="display:flex;gap:8px;margin:10px 0;">
+                <input type="text" name="q" placeholder="Search GeniuzLab..." style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--gl-ov-12);background:var(--gl-ov-04);color:var(--gl-text);">
+            </form>
+            {% if user.is_authenticated %}
+                <a href="{% url 'ai_hub' %}"><i class="fas fa-robot"></i> AI Hub</a>
+                <a href="{% url 'notifications' %}"><i class="fas fa-bell"></i> Notifications</a>
+                <a href="{% url 'dashboard' %}" class="mobile-btn-primary">Dashboard</a>
+                {% if user.is_staff %}<a href="{% url 'automation_dashboard' %}">Automation</a>{% endif %}
+                <a href="{% url 'logout' %}" class="mobile-btn-outline">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'register' %}" class="mobile-btn-primary">Get Started</a>
+            {% endif %}
+       </li>
+    </ul>
+
+    <div class="nav-buttons">
+        <button type="button" id="gl-theme-toggle" class="login-btn" aria-label="Toggle dark/light mode">
+            <i class="fas fa-moon" id="gl-theme-icon"></i>
+        </button>
+        <a href="{% url 'search' %}" class="login-btn"><i class="fas fa-search"></i></a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'ai_hub' %}" class="login-btn"><i class="fas fa-robot"></i></a>
+            <a href="{% url 'notifications' %}" class="login-btn"><i class="fas fa-bell"></i></a>
+            <a href="{% url 'dashboard' %}" class="login-btn">Dashboard</a>
+            <a href="{% url 'logout' %}" class="btn">Logout</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="login-btn">Login</a>
+            <a href="{% url 'register' %}" class="btn">Get Started</a>
+        {% endif %}
+    </div>
+
+    <div class="menu-toggle">
+        ☰
+    </div>
+
+</nav>
+
+{% if messages %}
+<div class="alert-container" style="max-width:900px;margin:110px auto 0;padding:0 20px;">
+    {% for message in messages %}
+    <div class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% block content %}{% endblock %}
+
+<footer class="footer hidden">
+
+    <div class="footer-container">
+
+        <div class="footer-box">
+
+            <img src="{% static 'images/logo.png' %}" alt="GeniuzLab Logo">
+
+            <p>
+                Empowering creatives through technology,
+                education and innovation.
+            </p>
+
+        </div>
+
+        <div class="footer-box">
+
+            <h3>Quick Links</h3>
+
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'about' %}">About</a>
+            <a href="{% url 'home' %}#academy">Academy</a>
+            <a href="{% url 'home' %}#portfolio">Portfolio</a>
+            <a href="{% url 'home' %}#contact">Contact</a>
+
+        </div>
+
+        <div class="footer-box">
+
+            <h3>Our Brands</h3>
+
+            <a href="{% url 'graphics' %}">Geniuz Graphics</a>
+            <a href="{% url 'motion' %}">GENIUZinMOTION</a>
+            <a href="{% url 'academy' %}">Geniuz Academy</a>
+            {% if FEATURE_VTU_ENABLED %}<a href="{% url 'subs' %}">GeniuzSubs</a>{% endif %}
+
+        </div>
+
+        <div class="footer-box">
+
+            <h3>Contact</h3>
+
+            <p>Email: geniuzlab577@gmail.com</p>
+            <p>Phone: +234 9138955730</p>
+            <p>Nigeria</p>
+
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+
+        © 2026 GeniuzLab. All Rights Reserved.
+
+    </div>
+
+</footer>
+<button id="topBtn">↑</button>
+<script>
+const menuToggle = document.querySelector(".menu-toggle");
+const navLinks = document.querySelector(".nav-links");
+
+menuToggle.addEventListener("click", () => {
+    navLinks.classList.toggle("active");
+});
+const hiddenElements = document.querySelectorAll(".hidden");
+
+const observer = new IntersectionObserver((entries) => {
+
+    entries.forEach((entry) => {
+
+        if(entry.isIntersecting){
+
+            entry.target.classList.add("show");
+
+        }
+
+    });
+
+});
+
+hiddenElements.forEach((el)=>observer.observe(el));
+window.addEventListener("load", () => {
+
+    setTimeout(() => {
+
+        const loaderEl = document.getElementById("loader");
+        loaderEl.style.opacity = "0";
+        loaderEl.style.pointerEvents = "none";
+
+        setTimeout(() => {
+
+            loaderEl.style.display = "none";
+
+        },400);
+
+    },300);
+
+});
+const sections = document.querySelectorAll("section[id]");
+const navItems = document.querySelectorAll(".nav-links a");
+
+window.addEventListener("scroll", () => {
+
+    let current = "";
+
+    sections.forEach(section => {
+
+        const sectionTop = section.offsetTop - 120;
+        const sectionHeight = section.offsetHeight;
+
+        if(window.scrollY >= sectionTop &&
+           window.scrollY < sectionTop + sectionHeight){
+
+            current = section.getAttribute("id");
+
+        }
+
+    });
+
+    navItems.forEach(link => {
+
+        link.classList.remove("active");
+
+        if(link.getAttribute("href").endsWith("#" + current) && current !== ""){
+
+            link.classList.add("active");
+
+        }
+
+    });
+
+});
+
+const topBtn = document.getElementById("topBtn");
+
+window.addEventListener("scroll", () => {
+
+    if(window.scrollY > 400){
+
+        topBtn.style.display = "block";
+
+    }else{
+
+        topBtn.style.display = "none";
+
+    }
+
+});
+
+topBtn.addEventListener("click", () => {
+
+    window.scrollTo({
+
+        top:0,
+
+        behavior:"smooth"
+
+    });
+
+});
+</script>
+{% if assistant_enabled %}
+<button id="glab-assistant-launcher" aria-label="Open GeniuzLab assistant"><i class="fas fa-comment-dots"></i></button>
+<div id="glab-assistant-panel">
+    <div id="glab-assistant-header">
+        <span>GeniuzLab Assistant</span>
+        <button id="glab-assistant-close" aria-label="Close assistant">&times;</button>
+    </div>
+    <div id="glab-assistant-messages"></div>
+    <form id="glab-assistant-form">
+        {% csrf_token %}
+        <input id="glab-assistant-input" type="text" placeholder="Ask me anything..." autocomplete="off">
+        <button type="submit" aria-label="Send"><i class="fas fa-paper-plane"></i></button>
+    </form>
+</div>
+<script>window.GLAB_ASSISTANT_URL = "{% url 'assistant_ask' %}";</script>
+<script src="{% static 'js/assistant.js' %}"></script>
+{% endif %}
+<script src="{% static 'js/contact.js' %}"></script>
+<script src="{% static 'js/theme.js' %}"></script>
+<script src="{% static 'js/prevent-double-submit.js' %}"></script>
+<script src="{% static 'js/glab-select.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

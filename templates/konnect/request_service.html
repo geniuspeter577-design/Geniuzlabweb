@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Request {{ creative.user.username }} | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header"><h1>Request a Service from {{ creative.headline|default:creative.user.username }}</h1></div>
+    <form method="POST" class="form-box">
+        {% csrf_token %}
+        <div class="form-group"><label>What do you need?</label><textarea name="message" rows="5" required placeholder="Describe your project..."></textarea></div>
+        <div class="form-group"><label>Budget (₦, optional)</label><input type="number" step="0.01" name="budget"></div>
+        <button type="submit" class="btn-primary">Send Request</button>
+        <a href="{% url 'creative_detail' creative.pk %}" class="btn-outline">Cancel</a>
+    </form>
+</section>
+{% endblock %}

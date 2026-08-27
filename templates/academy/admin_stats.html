@@ -1,0 +1,105 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}Academy Stats Dashboard{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'admin:academy_course_changelist' %}">Academy</a>
+    &rsaquo; Stats Dashboard
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>Academy Stats Dashboard</h1>
+
+<div style="display:flex;flex-wrap:wrap;gap:16px;margin:20px 0;">
+    <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;min-width:180px;">
+        <h3 style="margin:0 0 6px;">Payments</h3>
+        <p style="margin:2px 0;">Pending: <strong>{{ payments_pending }}</strong></p>
+        <p style="margin:2px 0;">Approved: <strong>{{ payments_approved }}</strong></p>
+        <p style="margin:2px 0;">Rejected: <strong>{{ payments_rejected }}</strong></p>
+    </div>
+
+    <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;min-width:180px;">
+        <h3 style="margin:0 0 6px;">Students</h3>
+        <p style="margin:2px 0;">Active: <strong>{{ active_students }}</strong></p>
+        <p style="margin:2px 0;">Completed: <strong>{{ completed_students }}</strong></p>
+        <p style="margin:2px 0;">Average progress: <strong>{{ average_progress }}%</strong></p>
+    </div>
+
+    <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;min-width:180px;">
+        <h3 style="margin:0 0 6px;">Courses</h3>
+        <p style="margin:2px 0;">Published: <strong>{{ published_courses }}</strong></p>
+        <p style="margin:2px 0;">Draft: <strong>{{ draft_courses }}</strong></p>
+    </div>
+
+    <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;min-width:180px;">
+        <h3 style="margin:0 0 6px;">Quizzes</h3>
+        <p style="margin:2px 0;">Attempts: <strong>{{ quiz_attempts }}</strong></p>
+        <p style="margin:2px 0;">Pass rate: <strong>{{ quiz_pass_rate }}%</strong></p>
+    </div>
+
+    <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;min-width:180px;">
+        <h3 style="margin:0 0 6px;">Certificates</h3>
+        <p style="margin:2px 0;font-size:24px;"><strong>{{ certificate_count }}</strong></p>
+    </div>
+</div>
+
+<h2>Courses</h2>
+<table style="width:100%;border-collapse:collapse;background:#fff;">
+    <thead>
+        <tr style="text-align:left;border-bottom:2px solid #ddd;">
+            <th style="padding:8px;">Course</th>
+            <th style="padding:8px;">Enrollments</th>
+            <th style="padding:8px;">Published modules</th>
+            <th style="padding:8px;">Draft modules</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for course in courses %}
+        <tr style="border-bottom:1px solid #eee;">
+            <td style="padding:8px;">
+                <a href="{% url 'admin:academy_course_change' course.pk %}">{{ course.title }}</a>
+            </td>
+            <td style="padding:8px;">{{ course.enrollment_count }}</td>
+            <td style="padding:8px;">{{ course.published_module_count }}</td>
+            <td style="padding:8px;">
+                {% if course.draft_module_count %}
+                    <span style="color:#b45309;">{{ course.draft_module_count }} awaiting review</span>
+                {% else %}0{% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Payments awaiting review</h2>
+{% if pending_payments_recent %}
+<table style="width:100%;border-collapse:collapse;background:#fff;">
+    <thead>
+        <tr style="text-align:left;border-bottom:2px solid #ddd;">
+            <th style="padding:8px;">Student</th>
+            <th style="padding:8px;">Course</th>
+            <th style="padding:8px;">Amount</th>
+            <th style="padding:8px;">Submitted</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for payment in pending_payments_recent %}
+        <tr style="border-bottom:1px solid #eee;">
+            <td style="padding:8px;">
+                <a href="{% url 'admin:academy_enrollmentpayment_change' payment.pk %}">{{ payment.full_name }}</a>
+            </td>
+            <td style="padding:8px;">{{ payment.course.title }}</td>
+            <td style="padding:8px;">₦{{ payment.amount }}</td>
+            <td style="padding:8px;">{{ payment.created_at|date:"M d, Y" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Nothing pending — all caught up.</p>
+{% endif %}
+
+{% endblock %}

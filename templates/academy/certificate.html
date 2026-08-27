@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Certificate — {{ certificate.course.title }} | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>Certificate of Completion</h1>
+        <p>Verified credential issued by GeniuzLab Academy</p>
+    </div>
+
+    <div class="glass-card gl-certificate" style="max-width:720px;margin:0 auto 24px;position:relative;overflow:hidden;
+        background:linear-gradient(135deg,rgba(126,217,87,.10),var(--gl-ov-02));
+        border:1px solid rgba(126,217,87,.3);border-radius:22px;padding:40px 36px;text-align:center;">
+
+        <div style="font-size:2.4rem;margin-bottom:6px;">🎓</div>
+        <p style="letter-spacing:3px;text-transform:uppercase;font-size:12px;color:var(--gl-accent);margin-bottom:2px;">
+            GeniuzLab Academy
+        </p>
+        <h2 style="margin:6px 0 18px;font-size:1.6rem;">This certifies that</h2>
+
+        <h1 style="font-size:2rem;margin:0 0 6px;background:var(--gl-gradient-brand);
+            -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">
+            {{ certificate.user.get_full_name|default:certificate.user.username }}
+        </h1>
+
+        <p style="color:var(--gl-text-soft);margin:14px 0 4px;">has successfully completed</p>
+        <h2 style="margin:0 0 22px;">{{ certificate.course.icon }} {{ certificate.course.title }}</h2>
+
+        <div class="info-rows" style="max-width:420px;margin:0 auto 24px;text-align:left;">
+            <div class="info-row"><span class="info-label">Certificate ID</span><span>{{ certificate.certificate_id }}</span></div>
+            <div class="info-row"><span class="info-label">Issue Date</span><span>{{ certificate.issued_at|date:"F d, Y" }}</span></div>
+            <div class="info-row"><span class="info-label">Student</span><span>{{ certificate.user.get_full_name|default:certificate.user.username }}</span></div>
+        </div>
+
+        <img src="{{ qr_code_url }}" alt="Certificate verification QR code" width="140" height="140"
+             style="border-radius:12px;background:#fff;padding:8px;">
+
+        <p style="font-size:12px;color:var(--gl-text-faint);margin-top:16px;word-break:break-all;">
+            Verify at: <a href="{{ verification_url }}" style="color:var(--gl-accent);">{{ verification_url }}</a>
+        </p>
+    </div>
+
+    <div style="text-align:center;">
+        <button onclick="window.print()" class="btn-outline btn-sm">
+            <i class="fas fa-print"></i> Print / Save as PDF
+        </button>
+        {% if request.user.is_authenticated %}
+        <a href="{% url 'dashboard' %}" class="hero-link" style="margin-left:14px;">Back to Dashboard →</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

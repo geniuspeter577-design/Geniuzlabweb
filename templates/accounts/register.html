@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | GeniuzLab</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+
+<body>
+
+<div class="auth-page">
+
+    <div class="auth-card">
+
+        <a href="{% url 'home' %}"><img src="{% static 'images/logo.png' %}" class="auth-logo" alt="GeniuzLab"></a>
+
+        <h1>Join GeniuzLab</h1>
+        <p>Create your creative account</p>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                <i class="fas {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" id="registerForm" autocomplete="on">
+            {% csrf_token %}
+
+            <div class="auth-field">
+                <label for="id_username">Username</label>
+                <input type="text" id="id_username" name="username" placeholder="Choose a username" autocomplete="username" required autofocus>
+            </div>
+
+            <div class="auth-field">
+                <label for="id_email">Email</label>
+                <input type="email" id="id_email" name="email" placeholder="you@example.com" autocomplete="email" required>
+            </div>
+
+            <div class="auth-field">
+                <label for="id_password">Password</label>
+                <input type="password" id="id_password" name="password" placeholder="Create a password" autocomplete="new-password" required>
+            </div>
+
+            <div class="auth-field">
+                <label for="id_confirm_password">Confirm Password</label>
+                <input type="password" id="id_confirm_password" name="confirm_password" placeholder="Re-enter your password" autocomplete="new-password" required>
+            </div>
+
+            <div class="auth-field">
+                <label for="id_role">I'm joining as</label>
+                <select name="role" id="id_role">
+                    {% for value, label in role_choices %}
+                        {% if value == "customer" or value == "creative" or value == "student" %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" id="registerSubmit">
+                <span class="btn-spinner"></span>
+                <span class="btn-label">Create Account</span>
+            </button>
+
+        </form>
+
+        <div class="auth-link">
+            Already have an account?
+            <a href="{% url 'login' %}">Login</a>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    document.getElementById('registerForm').addEventListener('submit', function () {
+        var btn = document.getElementById('registerSubmit');
+        btn.classList.add('is-loading');
+        btn.disabled = true;
+        btn.querySelector('.btn-label').textContent = 'Creating account…';
+    });
+</script>
+
+</body>
+</html>

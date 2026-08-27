@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}VTU Orders | GeniuzSubs{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header"><h1>VTU Order History</h1></div>
+
+    {% if orders %}
+    <div class="card-grid">
+        {% for order in orders %}
+        <a href="{% url 'vtu_order_detail' order.pk %}" class="glass-card">
+            <span class="badge badge-green">{{ order.get_status_display }}</span>
+            <h3 style="margin-top:12px;">{{ order.get_service_type_display }}</h3>
+            <p>{{ order.recipient }} — ₦{{ order.amount }}</p>
+            <p style="opacity:.6;font-size:.85em;">{{ order.created_at|date:"M d, Y H:i" }}</p>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-receipt"></i>
+        <p>No VTU purchases yet.</p>
+        <a href="{% url 'vtu_home' %}" class="btn-primary">Buy Airtime or Data</a>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

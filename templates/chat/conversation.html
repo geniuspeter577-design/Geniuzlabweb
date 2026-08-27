@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% block title %}{{ other_user.username }} | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header conversation-header">
+        <a href="{% url 'inbox' %}" class="back-link"><i class="fas fa-arrow-left"></i></a>
+        <div class="avatar-circle">
+            {% if other_user.display_avatar_url %}<img src="{{ other_user.display_avatar_url }}" alt="Profile avatar">{% else %}{{ other_user.username|first|upper }}{% endif %}
+            <span class="online-dot" id="presenceDot" style="{% if not other_user.is_online %}display:none;{% endif %}" title="Online"></span>
+        </div>
+        <div>
+            <h1>{{ other_user.username }}</h1>
+            <span class="presence-label" id="presenceLabel">{% if other_user.is_online %}Online{% else %}Offline{% endif %}</span>
+        </div>
+    </div>
+
+    {% if messages %}
+    <ul class="messages-alerts">
+        {% for m in messages %}<li>{{ m }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+
+    <div class="chat-window" id="chatWindow"
+         data-poll-url="{% url 'poll_conversation' conversation.pk %}"
+         data-typing-url="{% url 'set_typing' conversation.pk %}"
+         data-last-id="{% with last=conversation.messages.last %}{{ last.id|default:0 }}{% endwith %}">
+        <div class="chat-drop-overlay" id="chatDropOverlay">Drop file to attach</div>
+
+        <div class="chat-messages" id="chatMessages">
+            {% for msg in conversation_messages %}
+            <div class="chat-bubble {% if msg.sender == user %}mine{% endif %}" id="msg-{{ msg.id }}" data-msg-id="{{ msg.id }}">
+                {% if msg.reply_to %}
+                <div class="chat-reply-quote">
+                    <strong>{{ msg.reply_to.sender.username }}</strong>
+                    <span>{{ msg.reply_to.text|default:"Attachment"|truncatechars:50 }}</span>
+                </div>
+                {% endif %}
+                {% if msg.text %}<div>{{ msg.text }}</div>{% endif %}
+                {% if msg.attachment %}
+                    {% if msg.is_image_attachment %}
+                    <a href="{{ msg.attachment.url }}" target="_blank" class="chat-attachment-image"><img src="{{ msg.attachment.url }}" alt="Attachment"></a>
+                    {% elif msg.is_video_attachment %}
+                    <video class="chat-attachment-video" controls preload="metadata" src="{{ msg.attachment.url }}"></video>
+                    {% else %}
+                    <a href="{{ msg.attachment.url }}" target="_blank" download class="chat-attachment-file"><i class="fas fa-file-alt"></i> Download attachment</a>
+                    {% endif %}
+                {% endif %}
+                <div class="chat-bubble-footer">
+                    <button type="button" class="chat-reply-btn" data-reply-id="{{ msg.id }}" data-reply-sender="{{ msg.sender.username }}" data-reply-text="{{ msg.text|default:'Attachment'|truncatechars:50 }}">Reply</button>
+                    <span class="chat-time">{{ msg.created_at|date:"H:i" }}</span>
+                    {% if msg.sender == user %}
+                    <span class="chat-status" data-status-for="{{ msg.id }}">{% if msg.is_read %}Seen{% else %}Delivered{% endif %}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <p style="color:var(--gl-text-muted);text-align:center;">Say hello 👋</p>
+            {% endfor %}
+        </div>
+
+        <div class="chat-typing-indicator" id="chatTypingIndicator" style="display:none;">
+            {{ other_user.username }} is typing…
+        </div>
+
+        <div class="chat-reply-preview" id="chatReplyPreview" style="display:none;">
+            <div>
+                <strong id="chatReplyPreviewSender"></strong>
+                <span id="chatReplyPreviewText"></span>
+            </div>
+            <button type="button" id="chatReplyCancel" aria-label="Cancel reply"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div class="chat-attach-preview" id="chatAttachPreview" style="display:none;">
+            <i class="fas fa-paperclip"></i> <span id="chatAttachName"></span>
+            <button type="button" id="chatAttachCancel" aria-label="Remove attachment"><i class="fas fa-times"></i></button>
+        </div>
+
+        <form method="POST" class="chat-form" enctype="multipart/form-data" id="chatForm">
+            {% csrf_token %}
+            <input type="hidden" name="reply_to" id="chatReplyToInput" value="">
+            <label class="chat-attach-btn" title="Attach a file">
+                <i class="fas fa-paperclip"></i>
+                <input type="file" name="attachment" id="chatAttachInput" hidden
+                       accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.7z,.ai,.psd,.eps,.svg,.indd,.xd,.fig,.sketch,.cdr,.mp4,.mov,.webm,.m4v,.avi,.mkv">
+            </label>
+            <input type="text" name="text" id="chatTextInput" placeholder="Type a message..." autocomplete="off">
+            <button type="submit" class="btn-primary"><i class="fas fa-paper-plane"></i></button>
+        </form>
+    </div>
+</section>
+{% block extra_js %}
+<script>
+(function () {
+    var chatWindow = document.getElementById("chatWindow");
+    var chatBox = document.getElementById("chatMessages");
+    if (chatBox) { chatBox.scrollTop = chatBox.scrollHeight; }
+
+    // ---- Reply-to ----
+    var replyPreview = document.getElementById("chatReplyPreview");
+    var replyToInput = document.getElementById("chatReplyToInput");
+    function wireReplyButtons() {
+        document.querySelectorAll(".chat-reply-btn").forEach(function (btn) {
+            if (btn.dataset.wired) return;
+            btn.dataset.wired = "1";
+            btn.addEventListener("click", function () {
+                replyToInput.value = btn.dataset.replyId;
+                document.getElementById("chatReplyPreviewSender").textContent = btn.dataset.replySender;
+                document.getElementById("chatReplyPreviewText").textContent = btn.dataset.replyText;
+                replyPreview.style.display = "flex";
+            });
+        });
+    }
+    wireReplyButtons();
+    var cancelBtn = document.getElementById("chatReplyCancel");
+    if (cancelBtn) {
+        cancelBtn.addEventListener("click", function () {
+            replyToInput.value = "";
+            replyPreview.style.display = "none";
+        });
+    }
+
+    // ---- Attachment preview + drag-and-drop (desktop) ----
+    var attachInput = document.getElementById("chatAttachInput");
+    var attachPreview = document.getElementById("chatAttachPreview");
+    var attachName = document.getElementById("chatAttachName");
+    var attachCancel = document.getElementById("chatAttachCancel");
+    var dropOverlay = document.getElementById("chatDropOverlay");
+
+    function showAttachPreview(file) {
+        if (!file) { attachPreview.style.display = "none"; return; }
+        attachName.textContent = file.name;
+        attachPreview.style.display = "flex";
+    }
+    attachInput.addEventListener("change", function () {
+        showAttachPreview(attachInput.files[0]);
+    });
+    attachCancel.addEventListener("click", function () {
+        attachInput.value = "";
+        showAttachPreview(null);
+    });
+
+    if (window.DataTransfer) {
+        ["dragenter", "dragover"].forEach(function (evt) {
+            chatWindow.addEventListener(evt, function (e) {
+                e.preventDefault();
+                dropOverlay.style.display = "flex";
+            });
+        });
+        ["dragleave", "drop"].forEach(function (evt) {
+            chatWindow.addEventListener(evt, function (e) {
+                e.preventDefault();
+                if (evt === "dragleave" && e.target !== chatWindow && e.target !== dropOverlay) return;
+                dropOverlay.style.display = "none";
+            });
+        });
+        chatWindow.addEventListener("drop", function (e) {
+            e.preventDefault();
+            var files = e.dataTransfer.files;
+            if (files && files.length) {
+                attachInput.files = files;
+                showAttachPreview(files[0]);
+            }
+        });
+    }
+
+    // ---- Typing signal (throttled) ----
+    var typingUrl = chatWindow.dataset.typingUrl;
+    var textInput = document.getElementById("chatTextInput");
+    var lastTypingSent = 0;
+    textInput.addEventListener("input", function () {
+        var now = Date.now();
+        if (now - lastTypingSent < 2000) return;
+        lastTypingSent = now;
+        fetch(typingUrl, {
+            method: "POST",
+            headers: { "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value },
+        }).catch(function () {});
+    });
+
+    // ---- Polling: new messages, seen receipts, typing indicator, presence ----
+    var pollUrl = chatWindow.dataset.pollUrl;
+    var lastId = parseInt(chatWindow.dataset.lastId, 10) || 0;
+    var typingIndicator = document.getElementById("chatTypingIndicator");
+    var presenceDot = document.getElementById("presenceDot");
+    var presenceLabel = document.getElementById("presenceLabel");
+
+    function escapeHtml(s) {
+        var d = document.createElement("div");
+        d.textContent = s || "";
+        return d.innerHTML;
+    }
+
+    function renderMessage(m) {
+        var div = document.createElement("div");
+        div.className = "chat-bubble" + (m.is_mine ? " mine" : "");
+        div.id = "msg-" + m.id;
+        div.dataset.msgId = m.id;
+
+        var html = "";
+        if (m.reply_to_text) {
+            html += '<div class="chat-reply-quote"><span>' + escapeHtml(m.reply_to_text) + "</span></div>";
+        }
+        if (m.text) { html += "<div>" + escapeHtml(m.text) + "</div>"; }
+        if (m.attachment_url) {
+            if (m.is_image) {
+                html += '<a href="' + m.attachment_url + '" target="_blank" class="chat-attachment-image"><img src="' + m.attachment_url + '" alt="Attachment"></a>';
+            } else if (m.is_video) {
+                html += '<video class="chat-attachment-video" controls preload="metadata" src="' + m.attachment_url + '"></video>';
+            } else {
+                html += '<a href="' + m.attachment_url + '" target="_blank" download class="chat-attachment-file"><i class="fas fa-file-alt"></i> Download attachment</a>';
+            }
+        }
+        html += '<div class="chat-bubble-footer">';
+        html += '<button type="button" class="chat-reply-btn" data-reply-id="' + m.id + '" data-reply-sender="" data-reply-text="' + escapeHtml(m.text || "Attachment") + '">Reply</button>';
+        html += '<span class="chat-time">' + m.created_at + "</span>";
+        if (m.is_mine) {
+            html += '<span class="chat-status" data-status-for="' + m.id + '">' + (m.is_read ? "Seen" : "Delivered") + "</span>";
+        }
+        html += "</div>";
+        div.innerHTML = html;
+        return div;
+    }
+
+    function poll() {
+        fetch(pollUrl + "?after=" + lastId)
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (data) {
+                if (!data) return;
+
+                if (data.messages && data.messages.length) {
+                    var wasAtBottom = chatBox.scrollTop + chatBox.clientHeight >= chatBox.scrollHeight - 40;
+                    data.messages.forEach(function (m) {
+                        if (document.getElementById("msg-" + m.id)) return;
+                        chatBox.appendChild(renderMessage(m));
+                        lastId = Math.max(lastId, m.id);
+                    });
+                    wireReplyButtons();
+                    if (wasAtBottom) chatBox.scrollTop = chatBox.scrollHeight;
+                }
+
+                if (data.read_message_ids) {
+                    data.read_message_ids.forEach(function (id) {
+                        var el = document.querySelector('[data-status-for="' + id + '"]');
+                        if (el) el.textContent = "Seen";
+                    });
+                }
+
+                typingIndicator.style.display = data.other_typing ? "block" : "none";
+
+                if (presenceDot) presenceDot.style.display = data.other_online ? "inline-block" : "none";
+                if (presenceLabel) presenceLabel.textContent = data.other_online ? "Online" : "Offline";
+            })
+            .catch(function () {});
+    }
+
+    poll();
+    setInterval(poll, 3000);
+})();
+</script>
+{% endblock %}
+{% endblock %}

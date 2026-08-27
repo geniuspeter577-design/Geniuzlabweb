@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Geniuz Graphics | GeniuzLab{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="hero-left">
+        <p class="tag">🎨 A GeniuzLab Brand</p>
+        <h1>Geniuz<br><span>Graphics</span></h1>
+        <p class="description">
+            Premium branding, logo design and visual identity crafted by
+            GeniuzLab's vetted graphic design creatives — built to make
+            businesses stand out.
+        </p>
+        <div class="hero-buttons">
+            <a href="{% url 'hire_creative' %}?category=graphic_design" class="btn">Hire a Designer</a>
+            <a href="{% url 'graphic_design' %}" class="btn-outline">Learn the Skill →</a>
+        </div>
+    </div>
+    <div class="hero-right">
+        <div class="logo-glow">
+            <div class="glow-circle"></div>
+            <img src="{% static 'images/generated/hero_graphics.png' %}" alt="Geniuz Graphics">
+        </div>
+    </div>
+</section>
+
+<section class="about hidden">
+    <div class="about-content">
+        <p class="tag">What We Do</p>
+        <h2>Design That <span>Performs</span></h2>
+        <p>
+            Geniuz Graphics brings together GeniuzLab's design creatives to deliver
+            branding, marketing visuals and digital assets that help businesses
+            grow — backed by the same quality standard across the ecosystem.
+        </p>
+    </div>
+</section>
+
+<section class="ecosystem hidden">
+    <div class="eco-header">
+        <p class="tag">Services</p>
+        <h2>What <span>Geniuz Graphics</span> Offers</h2>
+    </div>
+    <div class="eco-grid">
+        <div class="eco-card">
+            <div class="eco-icon">🏷️</div>
+            <h3>Logo & Brand Identity</h3>
+            <p>Complete visual identity systems for new and growing businesses.</p>
+        </div>
+        <div class="eco-card">
+            <div class="eco-icon">📱</div>
+            <h3>Social Media Design</h3>
+            <p>Scroll-stopping flyers, posts and ad creatives.</p>
+        </div>
+        <div class="eco-card">
+            <div class="eco-icon">📦</div>
+            <h3>Packaging & Print</h3>
+            <p>Business cards, packaging and print-ready design assets.</p>
+        </div>
+        <div class="eco-card">
+            <div class="eco-icon">🖥️</div>
+            <h3>UI/UX Visuals</h3>
+            <p>Interface mockups and design assets for apps and websites.</p>
+        </div>
+    </div>
+</section>
+
+<section id="contact" class="cta hidden">
+    <div class="cta-content">
+        <p class="tag">Get Started</p>
+        <h2>Ready For A <span>Standout Brand?</span></h2>
+        <div class="hero-buttons">
+            <a href="{% url 'hire_creative' %}?category=graphic_design" class="btn">Browse Designers</a>
+            <a href="{% url 'post_job' %}" class="btn-outline">Post a Design Job</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

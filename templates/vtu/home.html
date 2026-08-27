@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}GeniuzSubs VTU | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>GeniuzSubs <span style="color:#7ED957;">VTU</span></h1>
+        <p>Airtime, data, cable TV, electricity and exam pins — paid straight from your GeniuzLab wallet.</p>
+    </div>
+
+    <div class="card-grid">
+        <a href="{% url 'vtu_buy_airtime' %}" class="glass-card">
+            <span class="badge badge-green">Airtime</span>
+            <h3 style="margin-top:12px;">Buy Airtime</h3>
+            <p>MTN, Glo, Airtel, 9mobile — instant top-up.</p>
+        </a>
+        <a href="{% url 'vtu_buy_data' %}" class="glass-card">
+            <span class="badge badge-green">Data</span>
+            <h3 style="margin-top:12px;">Buy Data</h3>
+            <p>Data bundles across all major networks.</p>
+        </a>
+        <a href="{% url 'vtu_buy_cable' %}" class="glass-card">
+            <span class="badge badge-green">Cable TV</span>
+            <h3 style="margin-top:12px;">Cable TV</h3>
+            <p>DStv, GOtv, StarTimes subscription renewal.</p>
+        </a>
+        <a href="{% url 'vtu_buy_electricity' %}" class="glass-card">
+            <span class="badge badge-green">Electricity</span>
+            <h3 style="margin-top:12px;">Electricity</h3>
+            <p>Prepaid & postpaid bills, all major discos.</p>
+        </a>
+        <a href="{% url 'vtu_buy_education' %}" class="glass-card">
+            <span class="badge badge-green">Education</span>
+            <h3 style="margin-top:12px;">WAEC / JAMB</h3>
+            <p>Result checker and registration pins.</p>
+        </a>
+        <a href="{% url 'vtu_order_history' %}" class="glass-card">
+            <span class="badge badge-green">History</span>
+            <h3 style="margin-top:12px;">Order History</h3>
+            <p>Track every purchase and its status.</p>
+        </a>
+    </div>
+
+    <div style="margin-top:24px;">
+        <a href="{% url 'wallet_home' %}" class="btn-outline">Fund Wallet</a>
+    </div>
+</section>
+{% endblock %}

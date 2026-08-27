@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Jobs | GeniuzLab{% endblock %}
+
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>Browse Jobs</h1>
+        <p>Explore freelance and full-time opportunities from verified clients.</p>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
+        {% if user.is_authenticated %}
+        <a href="{% url 'post_job' %}" class="btn-primary">Post a Job</a>
+        {% else %}
+        <a href="{% url 'login' %}?next={% url 'post_job' %}" class="btn-primary">Login to Post a Job</a>
+        {% endif %}
+    </div>
+
+    <div class="filter-bar">
+        <a href="{% url 'jobs' %}" class="{% if not selected_category %}active{% endif %}">All</a>
+        {% for value, label in categories %}
+        <a href="?category={{ value }}" class="{% if selected_category == value %}active{% endif %}">{{ label }}</a>
+        {% endfor %}
+    </div>
+
+    {% if jobs %}
+    <div class="card-grid">
+        {% for job in jobs %}
+        <a href="{% url 'job_detail' job.pk %}" class="glass-card" style="text-decoration:none;color:inherit;display:block;">
+            <span class="badge badge-green">{{ job.get_category_display }}</span>
+            <h3 style="margin-top:12px;">{{ job.title }}</h3>
+            <p>{{ job.description|truncatechars:100 }}</p>
+            {% if job.budget %}<p style="color:#7ED957;font-weight:600;">₦{{ job.budget }}</p>{% endif %}
+            <p style="color:var(--gl-text-muted);font-size:13px;">{{ job.applicant_count }} applicant{{ job.applicant_count|pluralize }}</p>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-briefcase"></i>
+        <p>No open jobs right now. <a href="{% url 'post_job' %}" style="color:#7ED957;">Post the first one</a>.</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% comment %}
+Reusable "Contact Us" action. Include with:
+    {% include "partials/contact_button.html" %}
+
+Renders a mailto: link (with a pre-filled subject and starter message,
+same on every device/browser) plus a small "Copy Email" affordance next
+to it. Detecting whether a mailto: link actually opened a mail client
+isn't reliable across browsers, so instead of guessing, the copy
+fallback is always available — anyone without a configured mail
+client still has a one-tap way to get the email address.
+{% endcomment %}
+<span class="glab-contact-action">
+    <a href="mailto:geniuzlab577@gmail.com?subject=GeniuzLab%20Enquiry&body=Hi%20GeniuzLab%20team%2C%0A%0AI%27d%20like%20to%20ask%20about%3A%20"
+       class="btn-outline">
+        Contact Us
+    </a>
+    <button type="button"
+            class="glab-copy-email"
+            data-email="geniuzlab577@gmail.com"
+            aria-label="Copy GeniuzLab email address"
+            title="Copy email address">
+        <i class="fas fa-copy"></i>
+    </button>
+</span>

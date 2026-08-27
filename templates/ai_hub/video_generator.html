@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}AI Video Generator | GeniuzLab{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/ai_hub.css' %}">
+{% endblock %}
+{% block content %}
+<section class="aihub-tool">
+    <div class="aihub-tool-header">
+        <p class="tag">🎬 AI Hub</p>
+        <h1>AI Video <span>Generator</span></h1>
+        <p class="description">Describe a short video, and let AI generate it. Powered by {{ provider_name }}. Video generation takes a bit longer than images — this page will keep checking until it's ready.</p>
+    </div>
+
+    {% if not configured %}
+    <div class="aihub-notice">
+        <i class="fas fa-exclamation-circle"></i>
+        <div>
+            <strong>Not set up yet.</strong>
+            The '{{ provider_name }}' provider has no API key configured on this server.
+            An admin needs to add one to the <code>.env</code> file (see <code>.env.example</code>) before this tool can generate videos.
+        </div>
+    </div>
+    {% endif %}
+
+    <form id="aihub-video-form" class="aihub-form">
+        {% csrf_token %}
+        <textarea id="aihub-video-prompt" rows="3" maxlength="1000"
+            placeholder="e.g. A drone shot flying over a misty mountain forest at sunrise"
+            {% if not configured %}disabled{% endif %}></textarea>
+        <button type="submit" class="btn" id="aihub-video-submit" {% if not configured %}disabled{% endif %}>
+            <i class="fas fa-wand-magic-sparkles"></i> Generate Video
+        </button>
+    </form>
+
+    <div id="aihub-video-status" class="aihub-status-line"></div>
+
+    <div id="aihub-video-result" class="aihub-result"></div>
+
+    <div class="aihub-history">
+        <h3>Your recent videos</h3>
+        <div class="aihub-history-grid" id="aihub-video-history">
+            {% for vid in recent_videos %}
+            <div class="aihub-history-item">
+                {% if vid.status == "done" and vid.video_url %}
+                    <video src="{{ vid.video_url }}" controls></video>
+                {% elif vid.status in "queued,processing" %}
+                    <div class="aihub-history-placeholder"><i class="fas fa-spinner fa-spin"></i></div>
+                {% else %}
+                    <div class="aihub-history-placeholder aihub-history-failed"><i class="fas fa-triangle-exclamation"></i></div>
+                {% endif %}
+                <p>{{ vid.prompt }}</p>
+            </div>
+            {% empty %}
+            <p class="aihub-empty">No videos yet — generate your first one above.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script>
+    window.GLAB_VIDEO_GENERATE_URL = "{% url 'ai_hub_video_generate' %}";
+    window.GLAB_VIDEO_STATUS_URL_TEMPLATE = "{% url 'ai_hub_video_status' 0 %}".replace('0', '');
+</script>
+<script src="{% static 'js/ai_hub_video.js' %}"></script>
+{% endblock %}

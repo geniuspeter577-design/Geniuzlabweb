@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | GeniuzLab</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+
+<body>
+
+<div class="auth-page">
+
+    <div class="auth-card">
+
+        <a href="{% url 'home' %}"><img src="{% static 'images/logo.png' %}" class="auth-logo" alt="GeniuzLab"></a>
+
+        <h1>Welcome Back</h1>
+        <p>Login to your GeniuzLab account</p>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                <i class="fas {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" id="loginForm" autocomplete="on">
+            {% csrf_token %}
+
+            <div class="auth-field">
+                <label for="id_username">Username</label>
+                <input type="text" id="id_username" name="username" placeholder="Enter your username" autocomplete="username" required autofocus>
+            </div>
+
+            <div class="auth-field">
+                <label for="id_password">Password</label>
+                <input type="password" id="id_password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+            </div>
+
+            <div class="auth-forgot-row">
+                <a href="{% url 'password_reset' %}" class="auth-forgot">Forgot password?</a>
+            </div>
+
+            <button type="submit" id="loginSubmit">
+                <span class="btn-spinner"></span>
+                <span class="btn-label">Login</span>
+            </button>
+
+        </form>
+
+        <div class="auth-link">
+            Don't have an account?
+            <a href="{% url 'register' %}">Create Account</a>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', function () {
+        var btn = document.getElementById('loginSubmit');
+        btn.classList.add('is-loading');
+        btn.disabled = true;
+        btn.querySelector('.btn-label').textContent = 'Logging in…';
+    });
+</script>
+
+</body>
+</html>

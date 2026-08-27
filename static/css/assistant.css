@@ -1,0 +1,212 @@
+/* GeniuzLab floating AI assistant widget */
+#glab-assistant-launcher{
+    position:fixed;
+    right:22px;
+    bottom:22px;
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    background:#7ED957;
+    color:#06130c;
+    border:none;
+    box-shadow:0 8px 24px rgba(0,0,0,.35);
+    font-size:24px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    z-index:9999;
+    transition:transform .2s ease;
+}
+#glab-assistant-launcher:hover{ transform:scale(1.06); }
+
+#glab-assistant-panel{
+    position:fixed;
+    right:22px;
+    bottom:94px;
+    width:340px;
+    max-height:70vh;
+    background:#0d1a12;
+    border:1px solid rgba(126,217,87,.25);
+    border-radius:18px;
+    box-shadow:0 16px 48px rgba(0,0,0,.5);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    z-index:9999;
+    opacity:0;
+    transform:translateY(16px);
+    pointer-events:none;
+    transition:opacity .22s ease, transform .22s ease;
+}
+#glab-assistant-panel.open{
+    opacity:1;
+    transform:translateY(0);
+    pointer-events:auto;
+}
+
+#glab-assistant-header{
+    background:#7ED957;
+    color:#06130c;
+    padding:14px 16px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+#glab-assistant-header button{
+    background:none;
+    border:none;
+    color:#06130c;
+    font-size:18px;
+    cursor:pointer;
+    line-height:1;
+}
+
+#glab-assistant-messages{
+    flex:1;
+    overflow-y:auto;
+    padding:14px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+.glab-msg{
+    max-width:85%;
+    padding:10px 14px;
+    border-radius:14px;
+    font-size:13.5px;
+    line-height:1.4;
+    white-space:pre-line;
+}
+.glab-msg-bot{
+    background:var(--gl-ov-06);
+    color:#eaeaea;
+    align-self:flex-start;
+    border-bottom-left-radius:4px;
+}
+.glab-msg-user{
+    background:#7ED957;
+    color:#06130c;
+    align-self:flex-end;
+    border-bottom-right-radius:4px;
+}
+.glab-msg-links{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:6px;
+}
+.glab-msg-links a{
+    font-size:12px;
+    background:rgba(126,217,87,.15);
+    color:#7ED957;
+    border:1px solid rgba(126,217,87,.4);
+    border-radius:20px;
+    padding:5px 10px;
+    text-decoration:none;
+}
+
+/* Quick-reply chips: tappable canned answers that continue the chat
+   (as opposed to .glab-msg-links, which navigate to another page). */
+.glab-quick-replies{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:2px;
+}
+.glab-quick-reply{
+    font-size:12px;
+    font-family:inherit;
+    background:transparent;
+    color:#eaeaea;
+    border:1px solid var(--gl-ov-25);
+    border-radius:20px;
+    padding:6px 12px;
+    cursor:pointer;
+    transition:background .15s ease, border-color .15s ease;
+}
+.glab-quick-reply:hover{
+    background:rgba(126,217,87,.12);
+    border-color:#7ED957;
+    color:#7ED957;
+}
+
+/* Escalation: a reply that suggests Customer Care gets a subtle
+   highlighted border so it stands out from ordinary bot messages. */
+.glab-msg-escalate{
+    border:1px solid rgba(126,217,87,.5);
+    background:rgba(126,217,87,.08);
+}
+
+/* Auto-redirect notice shown right before we hand off to WhatsApp. */
+.glab-msg-redirect{
+    font-style:italic;
+    opacity:.8;
+}
+
+/* Typing indicator shown while waiting for a reply. */
+.glab-typing{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    padding:12px 14px;
+}
+.glab-typing span{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:rgba(234,234,234,.6);
+    animation:glab-typing-bounce 1.1s infinite ease-in-out;
+}
+.glab-typing span:nth-child(2){ animation-delay:.15s; }
+.glab-typing span:nth-child(3){ animation-delay:.3s; }
+@keyframes glab-typing-bounce{
+    0%, 60%, 100%{ transform:translateY(0); opacity:.6; }
+    30%{ transform:translateY(-4px); opacity:1; }
+}
+
+#glab-assistant-input:disabled,
+#glab-assistant-form button:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+}
+
+#glab-assistant-form{
+    display:flex;
+    border-top:1px solid var(--gl-border);
+    padding:10px;
+    gap:8px;
+}
+#glab-assistant-input{
+    flex:1;
+    background:var(--gl-ov-05);
+    border:1px solid var(--gl-ov-10);
+    border-radius:20px;
+    padding:10px 14px;
+    color:var(--gl-text);
+    font-size:13.5px;
+}
+#glab-assistant-form button{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    border:none;
+    background:#7ED957;
+    color:#06130c;
+    cursor:pointer;
+}
+
+@media (max-width:600px){
+    #glab-assistant-panel{
+        right:12px;
+        left:12px;
+        width:auto;
+        bottom:88px;
+        max-height:75vh;
+    }
+    #glab-assistant-launcher{
+        right:16px;
+        bottom:16px;
+    }
+}

@@ -1,0 +1,60 @@
+{% comment %}
+Reusable Bible verse card. Include with:
+    {% include "partials/bible_verse_widget.html" %}
+Optionally pass a custom wrapper class via {% include ... with extra_class="my-class" %}.
+Uses https://bible-api.com (no API key) client-side, so every page load and
+every 10-minute rotation shows a freshly-fetched, usually-different verse.
+{% endcomment %}
+<div class="bible-verse-card {{ extra_class }}" data-bible-verse-widget>
+    <div class="bible-verse-icon"><i class="fas fa-book-bible"></i></div>
+    <p class="bible-verse-text" data-bible-verse-text>Loading today&rsquo;s verse&hellip;</p>
+    <p class="bible-verse-ref" data-bible-verse-ref></p>
+</div>
+
+{% if not bible_verse_script_included %}
+<script>
+(function () {
+    if (window.__glBibleVerseInit) return;
+    window.__glBibleVerseInit = true;
+
+    var REFS = [
+        "John 3:16", "Psalm 23:1", "Philippians 4:13", "Proverbs 3:5-6",
+        "Jeremiah 29:11", "Romans 8:28", "Isaiah 41:10", "Joshua 1:9",
+        "Psalm 46:1", "Matthew 6:33", "Psalm 121:1-2", "Proverbs 16:3",
+        "2 Timothy 1:7", "Psalm 37:4", "Isaiah 40:31", "Romans 12:2",
+        "Philippians 4:6-7", "Psalm 119:105", "Galatians 6:9", "Psalm 27:1",
+        "Proverbs 22:29", "Colossians 3:23", "Hebrews 11:1", "James 1:5",
+        "Psalm 143:8", "1 Corinthians 10:13", "Deuteronomy 31:6", "Psalm 34:18",
+        "Ephesians 2:10", "Matthew 11:28"
+    ];
+
+    function pickRef() {
+        return REFS[Math.floor(Math.random() * REFS.length)];
+    }
+
+    function paint(text, ref) {
+        document.querySelectorAll("[data-bible-verse-text]").forEach(function (el) {
+            el.textContent = "\u201c" + text + "\u201d";
+        });
+        document.querySelectorAll("[data-bible-verse-ref]").forEach(function (el) {
+            el.textContent = "\u2014 " + ref;
+        });
+    }
+
+    function loadVerse() {
+        var ref = pickRef();
+        fetch("https://bible-api.com/" + encodeURIComponent(ref))
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.text) {
+                    paint(data.text.trim().replace(/\s+/g, " "), data.reference || ref);
+                }
+            })
+            .catch(function () { /* stay silent — keep whatever was showing */ });
+    }
+
+    loadVerse();
+    setInterval(loadVerse, 10 * 60 * 1000); // rotate every 10 minutes
+})();
+</script>
+{% endif %}

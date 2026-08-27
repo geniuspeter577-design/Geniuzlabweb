@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Order #{{ order.pk }} | GeniuzSubs{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header"><h1>Order #{{ order.pk }}</h1></div>
+
+    <div class="glass-card" style="max-width:520px;">
+        <span class="badge badge-green">{{ order.get_status_display }}</span>
+        <h3 style="margin-top:12px;">{{ order.get_service_type_display }}</h3>
+        <div class="info-rows">
+            <div class="info-row"><span class="info-label">Recipient</span><span>{{ order.recipient }}{% if order.recipient_name %} ({{ order.recipient_name }}){% endif %}</span></div>
+            <div class="info-row"><span class="info-label">Amount</span><span>₦{{ order.amount }}</span></div>
+            <div class="info-row"><span class="info-label">Reference</span><span>{{ order.request_id }}</span></div>
+            {% if order.provider_transaction_id %}<div class="info-row"><span class="info-label">Provider Txn ID</span><span>{{ order.provider_transaction_id }}</span></div>{% endif %}
+            {% if order.response_message %}<div class="info-row"><span class="info-label">Message</span><span>{{ order.response_message }}</span></div>{% endif %}
+            <div class="info-row"><span class="info-label">Date</span><span>{{ order.created_at|date:"M d, Y H:i" }}</span></div>
+        </div>
+
+        {% if not order.is_final %}
+        <form method="POST" action="{% url 'vtu_order_requery' order.pk %}" style="margin-top:16px;">
+            {% csrf_token %}
+            <button type="submit" class="btn-outline">Check Status</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <div style="margin-top:20px;">
+        <a href="{% url 'vtu_order_history' %}" class="btn-outline">Back to Orders</a>
+        <a href="{% url 'vtu_home' %}" class="btn-primary">Buy Another</a>
+    </div>
+</section>
+{% endblock %}

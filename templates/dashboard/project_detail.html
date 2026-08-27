@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}{{ item.title }} | GeniuzLab Projects{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>{{ item.title }}</h1>
+        <p>
+            by <a href="{% url 'public_profile' item.creative.user.username %}" style="color:#7ED957;">{{ item.creative.user.username }}</a>
+            in <span class="badge badge-grey">{{ item.get_category_display }}</span>
+            · {{ item.created_at|timesince }} ago
+        </p>
+    </div>
+
+    <div class="glass-card" style="max-width:900px;margin:0 auto 30px;">
+        {% if item.media.all %}
+        <div class="card-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:24px;">
+            {% for m in item.media.all %}
+                {% if m.media_type == 'video' %}
+                <video src="{{ m.file.url }}" controls style="width:100%;border-radius:12px;"></video>
+                {% else %}
+                <img src="{{ m.file.url }}" alt="Portfolio media" alt="{{ item.title }}" style="width:100%;border-radius:12px;">
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% elif item.image %}
+        <img src="{{ item.image.url }}" alt="{{ item.title }}" style="width:100%;border-radius:16px;margin-bottom:24px;">
+        {% endif %}
+
+        <p style="color:var(--gl-text-soft);line-height:1.8;">{{ item.description }}</p>
+
+        <!-- Engagement stats -->
+        <div style="display:flex;gap:22px;flex-wrap:wrap;margin:20px 0;color:var(--gl-text-muted);font-size:14px;">
+            <span><i class="fas fa-heart"></i> {{ item.like_count }} likes</span>
+            <span><i class="fas fa-comment"></i> {{ item.comment_count }} comments</span>
+            <span><i class="fas fa-share"></i> {{ item.share_count }} shares</span>
+            <span><i class="fas fa-eye"></i> {{ item.views_count }} views</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="hero-buttons" style="margin-top:10px;flex-wrap:wrap;">
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'toggle_like' item.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" class="btn-outline">
+                    {% if is_liked %}<i class="fas fa-heart" style="color:#7ED957;"></i> Liked{% else %}<i class="far fa-heart"></i> Like{% endif %}
+                </button>
+            </form>
+            <form method="post" action="{% url 'share_project' item.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" class="btn-outline"><i class="fas fa-share"></i> Share</button>
+            </form>
+            <form method="post" action="{% url 'toggle_save_project' item.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" class="btn-outline">{% if is_saved %}<i class="fas fa-bookmark"></i> Saved{% else %}<i class="far fa-bookmark"></i> Save{% endif %}</button>
+            </form>
+            <a href="{% url 'report_project' item.pk %}" class="btn-outline"><i class="fas fa-flag"></i> Report</a>
+            {% if user != item.creative.user %}
+            <a href="{% url 'request_service' item.creative.pk %}" class="btn"><i class="fas fa-briefcase"></i> Hire This Creative</a>
+            {% endif %}
+            {% else %}
+            <a href="{% url 'login' %}?next={{ request.path }}" class="btn-outline"><i class="far fa-heart"></i> Like</a>
+            <a href="{% url 'login' %}?next={{ request.path }}" class="btn"><i class="fas fa-briefcase"></i> Hire This Creative</a>
+            {% endif %}
+            {% if item.link %}<a href="{{ item.link }}" class="btn-outline" target="_blank" rel="noopener">Visit Live Project</a>{% endif %}
+            {% if user == item.creative.user %}
+            <a href="{% url 'edit_portfolio_item' item.pk %}" class="btn-outline"><i class="fas fa-pen"></i> Edit</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Creative info card -->
+    <div class="glass-card" style="max-width:900px;margin:0 auto 30px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
+        <a href="{% url 'public_profile' item.creative.user.username %}" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:16px;flex:1;">
+            <div class="avatar-circle" style="width:60px;height:60px;">
+                {% if item.creative.user.display_avatar_url %}<img src="{{ item.creative.user.display_avatar_url }}" alt="Profile avatar">{% else %}{{ item.creative.user.username|first|upper }}{% endif %}
+            </div>
+            <div>
+                <h3 style="margin-bottom:2px;">{{ item.creative.headline|default:item.creative.user.username }}</h3>
+                <span class="badge badge-green">{{ item.creative.get_category_display }}</span>
+            </div>
+        </a>
+        {% if user.is_authenticated and user != item.creative.user %}
+        <form method="post" action="{% url 'toggle_follow' item.creative.user.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <button type="submit" class="btn-outline">{% if is_following %}<i class="fas fa-user-check"></i> Following{% else %}<i class="fas fa-user-plus"></i> Follow{% endif %}</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- Comments -->
+    <div class="glass-card" style="max-width:900px;margin:0 auto 30px;">
+        <h3 style="margin-bottom:16px;">Comments ({{ item.comment_count }})</h3>
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'add_comment' item.pk %}" style="display:flex;gap:10px;margin-bottom:20px;">
+            {% csrf_token %}
+            <input type="text" name="text" maxlength="500" placeholder="Write a comment..." required
+                   style="flex:1;padding:12px 14px;border-radius:10px;border:1px solid var(--gl-ov-12);background:var(--gl-ov-04);color:var(--gl-text);">
+            <button type="submit" class="btn-primary">Post</button>
+        </form>
+        {% endif %}
+        {% for comment in item.comments.all %}
+        <div class="mini-card">
+            <a href="{% url 'public_profile' comment.user.username %}" class="avatar-circle">{% if comment.user.display_avatar_url %}<img src="{{ comment.user.display_avatar_url }}" alt="Profile avatar">{% else %}{{ comment.user.username|first|upper }}{% endif %}</a>
+            <div class="mini-info">
+                <h4><a href="{% url 'public_profile' comment.user.username %}" style="color:inherit;">{{ comment.user.username }}</a> <span style="color:var(--gl-text-muted);font-weight:400;font-size:12px;">{{ comment.created_at|timesince }} ago</span></h4>
+                <p>{{ comment.text }}</p>
+            </div>
+            {% if comment.user == user %}
+            <form method="post" action="{% url 'delete_comment' comment.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-outline btn-sm"><i class="fas fa-trash"></i></button>
+            </form>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p style="color:var(--gl-text-muted);">No comments yet — be the first to say something.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Other works by this creative -->
+    {% if other_works %}
+    <div style="max-width:900px;margin:0 auto;">
+        <h3 style="margin-bottom:20px;">More from {{ item.creative.user.username }}</h3>
+        <div class="card-grid">
+            {% for work in other_works %}
+            <a href="{% url 'project_detail' work.pk %}" class="glass-card" style="text-decoration:none;color:inherit;display:block;">
+                {% if work.preview_url %}<img src="{{ work.preview_url }}" alt="Portfolio preview" style="width:100%;border-radius:12px;margin-bottom:12px;">{% endif %}
+                <h3>{{ work.title }}</h3>
+                <span class="badge badge-grey">{{ work.get_category_display }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="hero-buttons" style="max-width:900px;margin:30px auto 0;">
+        <a href="{% url 'public_profile' item.creative.user.username %}" class="btn-outline">View Creative's Profile</a>
+        <a href="{% url 'home_feed' %}" class="btn-outline">Back to Feed</a>
+    </div>
+</section>
+{% endblock %}

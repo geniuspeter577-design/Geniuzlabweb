@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ job.title }} | GeniuzLab Jobs{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="glass-card" style="max-width:800px;">
+        <span class="badge badge-green">{{ job.get_category_display }}</span>
+        <h1 style="margin:15px 0;">{{ job.title }}</h1>
+        <p style="color:var(--gl-text-muted);margin-bottom:20px;">Posted by <a href="{% url 'public_profile' job.poster.username %}" style="color:#7ED957;">{{ job.poster.username }}</a> · {{ job.created_at|date:"M d, Y" }}</p>
+        <p>{{ job.description|linebreaks }}</p>
+
+        <div class="info-rows">
+            {% if job.budget %}<div class="info-row"><span class="info-label">Budget</span><span>₦{{ job.budget }}</span></div>{% endif %}
+            {% if job.deadline %}<div class="info-row"><span class="info-label">Deadline</span><span>{{ job.deadline }}</span></div>{% endif %}
+            <div class="info-row"><span class="info-label">Applicants</span><span>{{ job.applicant_count }}</span></div>
+        </div>
+
+        <div style="margin-top:25px;">
+            {% if user.is_authenticated %}
+                {% if user == job.poster %}
+                    <a href="{% url 'my_applications' %}" class="btn-outline">View Applications</a>
+                {% elif already_applied %}
+                    <span class="badge badge-green">You've applied</span>
+                {% else %}
+                    <a href="{% url 'apply_job' job.pk %}" class="btn-primary">Apply Now</a>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'login' %}?next={% url 'apply_job' job.pk %}" class="btn-primary">Login to Apply</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

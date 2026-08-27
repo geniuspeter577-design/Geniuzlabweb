@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}AI Hub | GeniuzLab{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/ai_hub.css' %}">
+{% endblock %}
+{% block content %}
+<section class="aihub-hero">
+    <p class="tag">🤖 AI Hub</p>
+    <h1>Your AI tools, <span>in one place</span></h1>
+    <p class="description">
+        A growing set of AI tools built into GeniuzLab. Start a
+        conversation, generate an image, or spin up a short video — each
+        tool is modular, so more get added over time without disrupting
+        the ones you already use.
+    </p>
+</section>
+
+<section class="verse-section">
+    {% include "partials/bible_verse_widget.html" %}
+</section>
+
+<section class="aihub-grid-section">
+    <div class="aihub-grid">
+        <div class="aihub-card">
+            <div class="aihub-card-icon"><i class="fas fa-comment-dots"></i></div>
+            <h3>AI Chat</h3>
+            <p>Creative writing, business advice, design direction, code, branding, and prompt engineering — with real conversation memory.</p>
+            {% if chat_configured %}
+                <span class="aihub-status aihub-status-ok"><i class="fas fa-check-circle"></i> Configured</span>
+            {% else %}
+                <span class="aihub-status aihub-status-warn"><i class="fas fa-exclamation-circle"></i> Needs setup</span>
+            {% endif %}
+            <a href="{% url 'ai_hub_chat_list' %}" class="btn aihub-card-btn">Open AI Chat</a>
+            <p class="aihub-hint">Prefer quick site help instead? Use the chat button in the corner of the screen.</p>
+        </div>
+
+        <div class="aihub-card">
+            <div class="aihub-card-icon"><i class="fas fa-image"></i></div>
+            <h3>AI Image Generator</h3>
+            <p>Describe an image and generate it using {{ image_provider_name }}.</p>
+            {% if image_configured %}
+                <span class="aihub-status aihub-status-ok"><i class="fas fa-check-circle"></i> Configured</span>
+            {% else %}
+                <span class="aihub-status aihub-status-warn"><i class="fas fa-exclamation-circle"></i> Needs setup</span>
+            {% endif %}
+            <a href="{% url 'ai_hub_image' %}" class="btn aihub-card-btn">Open Image Generator</a>
+        </div>
+
+        <div class="aihub-card">
+            <div class="aihub-card-icon"><i class="fas fa-clapperboard"></i></div>
+            <h3>AI Video Generator</h3>
+            <p>Describe a short video and generate it using {{ video_provider_name }}.</p>
+            {% if video_configured %}
+                <span class="aihub-status aihub-status-ok"><i class="fas fa-check-circle"></i> Configured</span>
+            {% else %}
+                <span class="aihub-status aihub-status-warn"><i class="fas fa-exclamation-circle"></i> Needs setup</span>
+            {% endif %}
+            <a href="{% url 'ai_hub_video' %}" class="btn aihub-card-btn">Open Video Generator</a>
+        </div>
+
+        <div class="aihub-card">
+            <div class="aihub-card-icon"><i class="fas fa-book-bible"></i></div>
+            <h3>Daily Bible Verse</h3>
+            <p>Get one Bible verse delivered as a notification every day.</p>
+            <span class="aihub-status aihub-status-ok"><i class="fas fa-check-circle"></i> Always available</span>
+            <a href="{% url 'notification_preferences' %}" class="btn-outline aihub-card-btn">Manage Notifications</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}GeniuzLab | Home of Creative Professionals{% endblock %}
+
+{% block content %}
+<section id="home" class="hero">
+
+    <div class="hero-left">
+
+        <p class="tag">
+            🚀 Home of Creative Professionals
+        </p>
+
+        <h1>
+            Create.<br>
+            Learn.<br>
+            <span>Connect.</span>
+        </h1>
+
+        <p class="description">
+            GeniuzLab is a premium digital ecosystem where creatives
+            learn high-income skills, build amazing projects,
+            connect with opportunities, and grow together.
+        </p>
+
+        <div class="hero-buttons">
+
+            <a href="{% url 'register' %}" class="btn">
+                Get Started
+            </a>
+
+            <a href="#ecosystem" class="btn-outline">
+                Explore →
+            </a>
+
+        </div>
+
+    </div>
+
+   <div class="hero-right">
+
+    <div class="logo-glow">
+
+        <div class="glow-circle"></div>
+
+        <span class="particle p1"></span>
+        <span class="particle p2"></span>
+        <span class="particle p3"></span>
+        <span class="particle p4"></span>
+        <span class="particle p5"></span>
+
+        <img src="{% static 'images/logo.png' %}" alt="GeniuzLab">
+
+    </div>
+
+</div>
+
+</section>
+
+<section class="verse-section">
+    {% include "partials/bible_verse_widget.html" %}
+</section>
+
+<section id="about" class="about hidden">
+
+    <div class="about-content">
+
+        <p class="tag">
+            About GeniuzLab
+        </p>
+
+        <h2>
+            Building The Future Of
+            <span>Creative Professionals</span>
+        </h2>
+
+        <p>
+            GeniuzLab is a creative technology ecosystem designed
+            to help individuals learn valuable digital skills,
+            create outstanding projects, connect with opportunities,
+            and grow in the digital world.
+        </p>
+
+        <p>
+            From graphic design and video production to education
+            and digital solutions, we empower creatives to transform
+            ideas into impact.
+        </p>
+
+        <a href="{% url 'about' %}" class="btn-outline" style="margin-top:10px;display:inline-block;">
+            Learn More About Us →
+        </a>
+
+    </div>
+
+</section>
+
+<section id="ecosystem" class="ecosystem hidden">
+
+    <div class="eco-header">
+
+        <p class="tag">
+            Our Ecosystem
+        </p>
+
+        <h2>
+            Everything You Need To
+            <span>Create & Grow</span>
+        </h2>
+
+        <p class="eco-text">
+            GeniuzLab brings together learning, creativity,
+            collaboration and digital solutions under one ecosystem.
+        </p>
+
+    </div>
+
+    <div class="eco-grid">
+
+        <a href="{% url 'graphics' %}" class="eco-card">
+
+            <div class="eco-icon">🎨</div>
+
+            <h3>Geniuz Graphics</h3>
+
+            <p>
+                Professional branding, flyer design,
+                logos and visual identity.
+            </p>
+
+        </a>
+
+        <a href="{% url 'motion' %}" class="eco-card">
+
+            <div class="eco-icon">🎬</div>
+
+            <h3>GENIUZinMOTION</h3>
+
+            <p>
+                Cinematic video editing,
+                storytelling and motion graphics.
+            </p>
+
+        </a>
+
+        <a href="{% url 'academy' %}" class="eco-card">
+
+            <div class="eco-icon">🎓</div>
+
+            <h3>Geniuz Academy</h3>
+
+            <p>
+                Learn profitable digital skills
+                through practical mentorship.
+            </p>
+
+        </a>
+
+        {% if FEATURE_VTU_ENABLED %}
+        <a href="{% url 'subs' %}" class="eco-card">
+
+            <div class="eco-icon">⚡</div>
+
+            <h3>GeniuzSubs</h3>
+
+            <p>
+                Airtime, data, TV subscription,
+                electricity and digital services.
+            </p>
+
+        </a>
+        {% endif %}
+
+    </div>
+
+</section>
+<section id="academy" class="academy hidden">
+
+    <div class="academy-header">
+
+        <p class="tag">
+            Geniuz Academy
+        </p>
+
+        <h2>
+            Learn Digital Skills That
+            <span>Pay For Life</span>
+        </h2>
+
+        <p class="academy-text">
+            Master practical, high-income digital skills through
+            premium training, mentorship and real-world projects.
+        </p>
+
+    </div>
+
+    <div class="academy-grid">
+
+        <div class="academy-card">
+            <img src="{% static 'images/generated/course_graphic_design.png' %}" alt="Graphic Design course">
+            <div class="academy-content">
+                <h3>🎨 Graphic Design</h3>
+                <p>Create professional flyers, branding, logos and social media designs.</p>
+                <a href="{% url 'graphic_design' %}" class="btn-outline">Learn More</a>
+            </div>
+        </div>
+
+        <div class="academy-card">
+            <img src="{% static 'images/generated/course_video_editing.png' %}" alt="Video Editing course">
+            <div class="academy-content">
+                <h3>🎬 Video Editing</h3>
+                <p>Learn cinematic editing, reels, YouTube videos and motion graphics.</p>
+                <a href="{% url 'video_editing' %}" class="btn-outline">Learn More</a>
+            </div>
+        </div>
+
+        <div class="academy-card">
+            <img src="{% static 'images/generated/course_web_development.png' %}" alt="Web Development course">
+            <div class="academy-content">
+                <h3>💻 Web Development</h3>
+                <p>Build modern websites and web applications using today's technologies.</p>
+                <a href="{% url 'web_development' %}" class="btn-outline">Learn More</a>
+            </div>
+        </div>
+
+        <div class="academy-card">
+            <img src="{% static 'images/generated/course_ai_productivity.png' %}" alt="AI & Productivity course">
+            <div class="academy-content">
+                <h3>🤖 AI & Productivity</h3>
+                <p>Use AI tools to work faster, smarter and grow your digital career.</p>
+                <a href="{% url 'ai_productivity' %}" class="btn-outline">Learn More</a>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+<section id="portfolio" class="portfolio hidden">
+
+    <div class="portfolio-header">
+
+        <p class="tag">
+            Featured Projects
+        </p>
+
+        <h2>
+            Some Of Our
+            <span>Best Works</span>
+        </h2>
+
+        <p class="portfolio-text">
+            Every project reflects creativity, excellence and attention to detail.
+        </p>
+
+    </div>
+
+    <div class="portfolio-grid">
+
+        {% for card in graphics_cards %}
+        {% if card.is_live %}
+        <div class="portfolio-card">
+            {% if card.project.preview_url %}<img src="{{ card.project.preview_url }}" alt="Portfolio preview" alt="{{ card.project.title }}">{% endif %}
+            <div class="portfolio-content">
+                <h3>{{ card.project.title }}</h3>
+                <p>{{ card.project.description|truncatechars:90|default:card.project.get_category_display }}</p>
+                <p style="color:var(--gl-text-muted);font-size:13px;margin-bottom:12px;">
+                    by <a href="{% url 'public_profile' card.project.creative.user.username %}" style="color:#7ED957;">{{ card.project.creative.user.username }}</a>
+                    · <i class="fas fa-heart"></i> {{ card.project.like_count }}
+                    · <i class="fas fa-eye"></i> {{ card.project.views_count }}
+                </p>
+                <a href="{% url 'project_detail' card.project.pk %}" class="btn-outline">View Project</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="portfolio-card">
+            <img src="{% static card.showcase.image %}" alt="{{ card.showcase.title }}">
+            <div class="portfolio-content">
+                <h3>{{ card.showcase.title }}</h3>
+                <p>{{ card.showcase.summary }}</p>
+                <a href="{% url 'project_showcase' card.showcase.slug %}" class="btn-outline">View Project</a>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+
+    </div>
+    <div style="text-align:center;margin-top:30px;">
+        <a href="{% url 'discover' %}" class="btn-outline">Explore All Projects →</a>
+    </div>
+
+</section>
+
+<section id="konnect" class="konnect hidden">
+
+    <div class="konnect-header">
+
+        <h2>
+            Jobs &
+            <span>Hire</span>
+        </h2>
+
+        <p>
+            Register as a creative to get hired by clients, or hire talented professionals for your next project.
+        </p>
+<div class="konnect-buttons">
+   <a href="{% url 'register' %}" class="btn-primary">Register as a Creative</a>
+  <a href="{% url 'hire_creative' %}" class="btn-outline">Hire a Creative</a>
+</div>
+    </div>
+
+   <div class="konnect-grid">
+
+    <a href="{% url 'register' %}" class="konnect-card">
+        <i class="fas fa-user-plus"></i>
+        <h3>Register as a Creative</h3>
+        <p>Create your profile and get discovered by businesses and clients.</p>
+    </a>
+
+    <a href="{% url 'hire_creative' %}" class="konnect-card">
+        <i class="fas fa-search"></i>
+        <h3>Hire a Creative</h3>
+        <p>Find skilled designers, video editors, developers and other professionals.</p>
+    </a>
+
+    <a href="{% url 'jobs' %}" class="konnect-card">
+        <i class="fas fa-briefcase"></i>
+        <h3>Browse Jobs</h3>
+        <p>Explore freelance and full-time opportunities from verified clients.</p>
+    </a>
+
+    <a href="{% url 'collaborate' %}" class="konnect-card">
+        <i class="fas fa-handshake"></i>
+        <h3>Collaborate</h3>
+        <p>Connect with creatives and businesses to build amazing projects together.</p>
+    </a>
+
+</div>
+
+</section>
+<section id="testimonials" class="testimonials hidden">
+
+    <div class="testimonial-header">
+
+        <p class="tag">Testimonials</p>
+
+        <h2>
+            What People Say About
+            <span>GeniuzLab</span>
+        </h2>
+
+        <p class="testimonial-text">
+            We are committed to helping creatives grow through quality training,
+            innovation and excellence.
+        </p>
+
+    </div>
+
+    <div class="testimonial-grid">
+
+        <div class="testimonial-card">
+            <p>
+                "Joining GeniuzLab completely changed my design journey.
+                The mentorship and practical training were outstanding."
+            </p>
+
+            <h4>— Sarah James</h4>
+        </div>
+
+        <div class="testimonial-card">
+            <p>
+                "The video editing classes gave me confidence to start
+                freelancing professionally."
+            </p>
+
+            <h4>— David Michael</h4>
+        </div>
+
+        <div class="testimonial-card">
+            <p>
+                "One of the best creative communities I've ever joined.
+                Highly recommended!"
+            </p>
+
+            <h4>— Esther Paul</h4>
+        </div>
+
+    </div>
+
+</section>
+<section class="stats hidden">
+
+    <div class="stats-container">
+
+        <div class="stat-box">
+            <h2>500+</h2>
+            <p>Students Trained</p>
+        </div>
+
+        <div class="stat-box">
+            <h2>2000+</h2>
+            <p>Creative Projects</p>
+        </div>
+
+        <div class="stat-box">
+            <h2>7+</h2>
+            <p>Countries Reached</p>
+        </div>
+
+        <div class="stat-box">
+            <h2>98%</h2>
+            <p>Client Satisfaction</p>
+        </div>
+
+    </div>
+
+</section>
+<section id="contact" class="cta hidden">
+
+    <div class="cta-content">
+
+        <p class="tag">
+            Join GeniuzLab
+        </p>
+
+        <h2>
+            Ready To Build Your
+            <span>Creative Future?</span>
+        </h2>
+
+        <p>
+            Learn, create, connect and grow with one of the fastest-growing
+            creative communities.
+        </p>
+
+        <div class="hero-buttons">
+
+            <a href="{% url 'register' %}" class="btn">
+                Join Now
+            </a>
+
+            {% include "partials/contact_button.html" %}
+
+        </div>
+
+    </div>
+
+</section>
+{% endblock %}

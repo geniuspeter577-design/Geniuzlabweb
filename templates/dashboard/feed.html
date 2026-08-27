@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Home Feed | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page" style="max-width:720px;margin:150px auto 100px;">
+    <div class="app-header">
+        <h1>Home Feed</h1>
+        <p>The latest work from the GeniuzLab creative community.</p>
+    </div>
+
+    <div class="filter-bar" style="margin-bottom:15px;">
+        <a href="?show=all" class="{% if show == 'all' %}active{% endif %}">All</a>
+        {% if user.is_authenticated %}
+        <a href="?show=following" class="{% if show == 'following' %}active{% endif %}">Following</a>
+        {% endif %}
+    </div>
+    <div class="filter-bar" style="margin-bottom:30px;">
+        <a href="?show={{ show }}" class="{% if not selected_category %}active{% endif %}">All Categories</a>
+        {% for value, label in categories %}
+        <a href="?show={{ show }}&category={{ value }}" class="{% if selected_category == value %}active{% endif %}">{{ label }}</a>
+        {% endfor %}
+    </div>
+
+    {% if page_obj.object_list %}
+    {% for post in page_obj %}
+    <div class="glass-card" style="margin-bottom:28px;padding:0;overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:14px;padding:20px 20px 0;">
+            <a href="{% url 'public_profile' post.creative.user.username %}" class="avatar-circle">
+                {% if post.creative.user.display_avatar_url %}<img src="{{ post.creative.user.display_avatar_url }}" alt="Profile avatar">{% else %}{{ post.creative.user.username|first|upper }}{% endif %}
+            </a>
+            <div style="flex:1;">
+                <a href="{% url 'public_profile' post.creative.user.username %}" style="color:var(--gl-text);font-weight:600;text-decoration:none;">{{ post.creative.user.username }}</a>
+                <p style="color:var(--gl-text-muted);font-size:13px;margin:0;">{{ post.created_at|timesince }} ago</p>
+            </div>
+            <span class="badge badge-green">{{ post.get_category_display }}</span>
+        </div>
+
+        <a href="{% url 'project_detail' post.pk %}" style="text-decoration:none;color:inherit;">
+            <div style="padding:16px 20px 6px;">
+                <h3 style="margin-bottom:4px;">{{ post.title }}</h3>
+                <p style="color:var(--gl-text-soft);">{{ post.description|truncatechars:140 }}</p>
+            </div>
+            {% if post.preview_url %}<img src="{{ post.preview_url }}" alt="Portfolio preview" style="width:100%;display:block;max-height:480px;object-fit:cover;">{% endif %}
+        </a>
+
+        <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;padding:16px 20px;color:var(--gl-text-muted);font-size:14px;">
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'toggle_like' post.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="btn-outline btn-sm">
+                    {% if post.pk in liked_ids %}<i class="fas fa-heart" style="color:#7ED957;"></i>{% else %}<i class="far fa-heart"></i>{% endif %} {{ post.like_total }}
+                </button>
+            </form>
+            {% else %}
+            <span><i class="far fa-heart"></i> {{ post.like_total }}</span>
+            {% endif %}
+            <a href="{% url 'project_detail' post.pk %}" style="color:var(--gl-text-muted);"><i class="far fa-comment"></i> {{ post.comment_total }}</a>
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'share_project' post.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="btn-outline btn-sm"><i class="fas fa-share"></i> {{ post.share_count }}</button>
+            </form>
+            <form method="post" action="{% url 'toggle_save_project' post.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="btn-outline btn-sm">{% if post.pk in saved_ids %}<i class="fas fa-bookmark"></i>{% else %}<i class="far fa-bookmark"></i>{% endif %}</button>
+            </form>
+            {% endif %}
+            <span><i class="far fa-eye"></i> {{ post.views_count }}</span>
+            <a href="{% url 'request_service' post.creative.pk %}" class="btn-outline btn-sm" style="margin-left:auto;">Hire</a>
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="hero-buttons" style="justify-content:center;">
+        {% if page_obj.has_previous %}<a href="?show={{ show }}&category={{ selected_category }}&page={{ page_obj.previous_page_number }}" class="btn-outline">← Newer</a>{% endif %}
+        {% if page_obj.has_next %}<a href="?show={{ show }}&category={{ selected_category }}&page={{ page_obj.next_page_number }}" class="btn-outline">Older →</a>{% endif %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-stream"></i>
+        <p>
+            {% if show == 'following' %}You're not following any creatives yet — visit <a href="{% url 'discover' %}" style="color:#7ED957;">Discover</a> to find some.
+            {% else %}No projects yet. Be the first to <a href="{% url 'add_portfolio_item' %}" style="color:#7ED957;">upload a project</a>.{% endif %}
+        </p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

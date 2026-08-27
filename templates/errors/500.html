@@ -1,0 +1,17 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Server Error | GeniuzLab</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body style="margin:0;background:var(--gl-bg);">
+<section class="error-page">
+    <img src="{% static 'images/logo.png' %}" alt="GeniuzLab" style="width:64px;height:64px;object-fit:contain;margin-bottom:18px;">
+    <h1>500</h1>
+    <p>Something went wrong on our end. Our team has been notified — please try again shortly.</p>
+    <a href="/" class="btn">Back to Home</a>
+</section>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}My Applications | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header"><h1>My Applications</h1></div>
+    {% for app in applications %}
+    <div class="list-row">
+        <div>
+            <strong>{{ app.job.title }}</strong>
+            <p style="color:var(--gl-text-muted);font-size:13px;">Applied {{ app.applied_at|date:"M d, Y" }}</p>
+        </div>
+        <span class="badge badge-{% if app.status == 'hired' %}green{% elif app.status == 'rejected' %}red{% elif app.status == 'shortlisted' %}yellow{% else %}grey{% endif %}">{{ app.get_status_display }}</span>
+    </div>
+    {% empty %}
+    <div class="empty-state"><i class="fas fa-briefcase"></i><p>You haven't applied to any jobs yet.</p><a href="{% url 'jobs' %}" class="btn-primary">Browse Jobs</a></div>
+    {% endfor %}
+</section>
+{% endblock %}

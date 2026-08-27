@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Geniuz Academy | GeniuzLab{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="hero-left">
+        <p class="tag">🎓 A GeniuzLab Brand</p>
+        <h1>Geniuz<br><span>Academy</span></h1>
+        <p class="description">
+            Learn high-income digital skills through practical mentorship,
+            real projects and a community built to help you grow.
+        </p>
+        <div class="hero-buttons">
+            <a href="{% url 'register' %}" class="btn">Enroll Now</a>
+            <a href="#courses" class="btn-outline">View Courses →</a>
+        </div>
+    </div>
+    <div class="hero-right">
+        <div class="logo-glow">
+            <div class="glow-circle"></div>
+            <img src="{% static 'images/generated/hero_academy.png' %}" alt="Geniuz Academy">
+        </div>
+    </div>
+</section>
+
+<section id="courses" class="academy hidden">
+    <div class="academy-header">
+        <p class="tag">Our Courses</p>
+        <h2>Learn Digital Skills That <span>Pay For Life</span></h2>
+        <p class="academy-text">
+            Every course is built around practical, real-world projects you can
+            add straight to your GeniuzLab creative portfolio.
+        </p>
+    </div>
+
+    <div class="academy-grid">
+        {% for course in courses %}
+        <div class="academy-card">
+            <a href="{% url 'course_detail' course.slug %}">
+                {% if course.image %}
+                <img src="{{ course.image.url }}" alt="{{ course.title }} course">
+                {% else %}
+                <img src="{% static 'images/generated/hero_academy.png' %}" alt="{{ course.title }} course">
+                {% endif %}
+            </a>
+            <div class="academy-content">
+                <h3>{{ course.icon }} {{ course.title }}</h3>
+                <p>{{ course.summary }}</p>
+                <div class="info-rows">
+                    {% if course.duration %}
+                    <div class="info-row"><span class="info-label">Duration</span><span>{{ course.duration }}</span></div>
+                    {% endif %}
+                    <div class="info-row"><span class="info-label">Level</span><span>{{ course.get_level_display }}</span></div>
+                    <div class="info-row"><span class="info-label">Price</span><span>₦{{ course.price }}</span></div>
+                </div>
+                <div class="course-buttons">
+                    <a href="{% url 'course_detail' course.slug %}" class="btn-outline">Learn More</a>
+                    <a href="{% url 'enroll_course' course.slug %}" class="btn-primary">Enroll Now</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state"><i class="fas fa-book-open"></i><p>No courses available yet — check back soon.</p></div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="cta hidden">
+    <div class="cta-content">
+        <p class="tag">Next Step</p>
+        <h2>Turn What You <span>Learn Into Income</span></h2>
+        <p>Finish a course, build your portfolio, then register as a creative to get hired on GeniuzLab.</p>
+        <div class="hero-buttons">
+            <a href="{% url 'register' %}" class="btn">Join Geniuz Academy</a>
+            <a href="{% url 'edit_creative_profile' %}" class="btn-outline">Set Up Creative Profile</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

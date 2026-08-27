@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Messages | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header"><h1>Messages</h1><p>Your conversations with creatives, clients and collaborators.</p></div>
+
+    <form method="get" class="chat-search-form">
+        <i class="fas fa-search"></i>
+        <input type="text" name="q" value="{{ query }}" placeholder="Search users, creatives or customers...">
+        {% if query %}<a href="{% url 'inbox' %}" class="chat-search-clear" aria-label="Clear search"><i class="fas fa-times"></i></a>{% endif %}
+    </form>
+
+    {% if query %}
+    <div class="dashboard-section">
+        <h2>People matching "{{ query }}"</h2>
+        {% if people_results %}
+        <div class="people-results">
+            {% for person in people_results %}
+            <div class="people-result-row">
+                <div class="avatar-circle">
+                    {% if person.display_avatar_url %}<img src="{{ person.display_avatar_url }}" alt="Profile avatar">{% else %}{{ person.username|first|upper }}{% endif %}
+                    {% if person.is_online %}<span class="online-dot" title="Online"></span>{% endif %}
+                </div>
+                <div class="people-result-body">
+                    <a href="{% url 'public_profile' person.username %}" style="color:inherit;"><strong>{{ person.get_full_name|default:person.username }}</strong></a>
+                    <p>{{ person.get_role_display }}{% if person.creative_profile.headline %} · {{ person.creative_profile.headline }}{% endif %}</p>
+                </div>
+                <a href="{% url 'start_conversation' person.id %}" class="btn-outline btn-sm">Message</a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="fas fa-user-slash"></i><p>No users, creatives or customers match "{{ query }}".</p></div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="inbox-list">
+        {% for item in conversation_list %}
+        <a href="{% url 'conversation_detail' item.conversation.pk %}" class="inbox-row {% if item.last_message and not item.last_message.is_read and item.last_message.sender != user %}inbox-row-unread{% endif %}">
+            <div class="avatar-circle">
+                {% if item.other_user.display_avatar_url %}<img src="{{ item.other_user.display_avatar_url }}" alt="Profile avatar">{% else %}{{ item.other_user.username|first|upper }}{% endif %}
+                {% if item.other_user.is_online %}<span class="online-dot" title="Online"></span>{% endif %}
+            </div>
+            <div class="inbox-row-body">
+                <a href="{% url 'public_profile' item.other_user.username %}" style="color:inherit;"><strong>{{ item.other_user.username }}</strong></a>
+                <p>
+                    {% if item.last_message.attachment and not item.last_message.text %}
+                        <i class="fas fa-paperclip"></i> Attachment
+                    {% else %}
+                        {{ item.last_message.text|default:"No messages yet"|truncatechars:60 }}
+                    {% endif %}
+                </p>
+            </div>
+            {% if item.last_message %}<span class="inbox-time">{{ item.last_message.created_at|date:"M d" }}</span>{% endif %}
+        </a>
+        {% empty %}
+        {% if not query %}
+        <div class="empty-state"><i class="fas fa-comments"></i><p>No conversations yet. Search above or message a creative from their profile to start collaborating.</p></div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

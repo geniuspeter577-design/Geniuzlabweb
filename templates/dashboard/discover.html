@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Discover | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>Discover</h1>
+        <p>Explore trending, latest and top-performing work across GeniuzLab.</p>
+    </div>
+
+    <div class="filter-bar" style="margin-bottom:15px;">
+        <a href="?tab=trending&category={{ selected_category }}" class="{% if tab == 'trending' %}active{% endif %}"><i class="fas fa-fire"></i> Trending</a>
+        <a href="?tab=latest&category={{ selected_category }}" class="{% if tab == 'latest' %}active{% endif %}">Latest</a>
+        <a href="?tab=most_liked&category={{ selected_category }}" class="{% if tab == 'most_liked' %}active{% endif %}">Most Liked</a>
+        <a href="?tab=most_viewed&category={{ selected_category }}" class="{% if tab == 'most_viewed' %}active{% endif %}">Most Viewed</a>
+    </div>
+    <div class="filter-bar" style="margin-bottom:30px;">
+        <a href="?tab={{ tab }}" class="{% if not selected_category %}active{% endif %}">All Categories</a>
+        {% for value, label in categories %}
+        <a href="?tab={{ tab }}&category={{ value }}" class="{% if selected_category == value %}active{% endif %}">{{ label }}</a>
+        {% endfor %}
+    </div>
+
+    {% if top_creatives %}
+    <h3 style="margin-bottom:16px;">Creatives to Watch</h3>
+    <div class="card-grid" style="margin-bottom:40px;">
+        {% for creative in top_creatives %}
+        <a href="{% url 'public_profile' creative.user.username %}" class="glass-card" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:14px;">
+            <div class="avatar-circle">{% if creative.user.display_avatar_url %}<img src="{{ creative.user.display_avatar_url }}" alt="Profile avatar">{% else %}{{ creative.user.username|first|upper }}{% endif %}</div>
+            <div>
+                <h4 style="margin-bottom:2px;">{{ creative.headline|default:creative.user.username }}</h4>
+                <p style="color:var(--gl-text-muted);font-size:13px;margin:0;">{{ creative.project_count }} projects</p>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <h3 style="margin-bottom:16px;">{{ tab|capfirst }} Projects</h3>
+    {% if page_obj.object_list %}
+    <div class="card-grid">
+        {% for project in page_obj %}
+        <a href="{% url 'project_detail' project.pk %}" class="glass-card" style="text-decoration:none;color:inherit;display:block;">
+            {% if project.preview_url %}<img src="{{ project.preview_url }}" alt="Portfolio preview" style="width:100%;border-radius:12px;margin-bottom:12px;">{% endif %}
+            <span class="badge badge-grey">{{ project.get_category_display }}</span>
+            <h3 style="margin-top:8px;">{{ project.title }}</h3>
+            <p style="color:var(--gl-text-muted);font-size:13px;">by {{ project.creative.user.username }}</p>
+            <p style="color:var(--gl-text-muted);font-size:13px;">
+                <i class="fas fa-heart"></i> {{ project.like_total }}
+                · <i class="fas fa-comment"></i> {{ project.comment_total }}
+                · <i class="fas fa-eye"></i> {{ project.views_count }}
+            </p>
+        </a>
+        {% endfor %}
+    </div>
+
+    <div class="hero-buttons" style="justify-content:center;margin-top:30px;">
+        {% if page_obj.has_previous %}<a href="?tab={{ tab }}&category={{ selected_category }}&page={{ page_obj.previous_page_number }}" class="btn-outline">← Prev</a>{% endif %}
+        {% if page_obj.has_next %}<a href="?tab={{ tab }}&category={{ selected_category }}&page={{ page_obj.next_page_number }}" class="btn-outline">Next →</a>{% endif %}
+    </div>
+    {% else %}
+    <div class="empty-state"><i class="fas fa-compass"></i><p>Nothing here yet — check back soon.</p></div>
+    {% endif %}
+</section>
+{% endblock %}

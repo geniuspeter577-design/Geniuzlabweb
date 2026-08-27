@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Notifications | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>Notifications</h1>
+        <p>Everything that needs your attention, in one place.</p>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
+        <a href="{% url 'notification_preferences' %}" class="btn-outline btn-sm"><i class="fas fa-sliders"></i> Preferences</a>
+        <form method="post" action="{% url 'mark_all_notifications_read' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn-outline btn-sm">Mark all as read</button>
+        </form>
+        <form method="post" action="{% url 'delete_read_notifications' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn-outline btn-sm">Clear read</button>
+        </form>
+    </div>
+
+    {% for n in notifications %}
+    <div class="list-row {% if not n.is_read %}list-row-unread{% endif %}">
+        <div class="activity-row">
+            <div class="activity-icon"><i class="fas fa-bell"></i></div>
+            <div class="activity-row-body">
+                {% if n.category %}<span class="badge">{{ n.get_category_display }}</span>{% endif %}
+                {{ n.message }}
+                <p style="color:var(--gl-text-muted);font-size:13px;">{{ n.created_at|date:"M d, Y H:i" }}</p>
+            </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+            {% if n.link %}<a href="{{ n.link }}" class="btn-outline btn-sm">View</a>{% endif %}
+            <form method="post" action="{% url 'delete_notification' n.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-outline btn-sm" aria-label="Delete notification"><i class="fas fa-trash"></i></button>
+            </form>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state"><i class="fas fa-bell"></i><p>You're all caught up.</p></div>
+    {% endfor %}
+</section>
+{% endblock %}

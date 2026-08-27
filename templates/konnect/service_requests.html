@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Service Requests | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header"><h1>Service Requests</h1></div>
+
+    <div class="dashboard-section">
+        <h2>Requests You've Received</h2>
+        {% for r in received %}
+        <div class="list-row">
+            <div>
+                <a href="{% url 'public_profile' r.client.username %}" style="color:#7ED957;"><strong>{{ r.client.username }}</strong></a> — {{ r.message|truncatechars:80 }}
+                {% if r.conversation %}<br><a href="{% url 'conversation_detail' r.conversation.pk %}" style="font-size:12px;color:var(--gl-text-muted);"><i class="fas fa-paperclip"></i> {{ r.delivered_files|length }} file{{ r.delivered_files|length|pluralize }} exchanged</a>{% endif %}
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                {% if r.status == 'pending' %}
+                <form method="post" action="{% url 'respond_service_request' r.pk 'accept' %}" style="display:inline;">{% csrf_token %}<button type="submit" class="btn-outline btn-sm">Accept</button></form>
+                <form method="post" action="{% url 'respond_service_request' r.pk 'decline' %}" style="display:inline;">{% csrf_token %}<button type="submit" class="btn-outline btn-sm">Decline</button></form>
+                {% endif %}
+                <span class="badge badge-{% if r.status == 'accepted' %}green{% elif r.status == 'declined' %}red{% else %}yellow{% endif %}">{{ r.get_status_display }}</span>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state"><i class="fas fa-inbox"></i><p>No incoming requests yet.</p></div>
+        {% endfor %}
+    </div>
+
+    <div class="dashboard-section">
+        <h2>Requests You've Sent</h2>
+        {% for r in sent %}
+        <div class="list-row">
+            <div>
+                <a href="{% url 'public_profile' r.creative.user.username %}" style="color:#7ED957;"><strong>{{ r.creative.user.username }}</strong></a> — {{ r.message|truncatechars:80 }}
+                {% if r.conversation %}<br><a href="{% url 'conversation_detail' r.conversation.pk %}" style="font-size:12px;color:var(--gl-text-muted);"><i class="fas fa-paperclip"></i> {{ r.delivered_files|length }} file{{ r.delivered_files|length|pluralize }} exchanged</a>{% endif %}
+            </div>
+            <span class="badge badge-{% if r.status == 'accepted' %}green{% elif r.status == 'declined' %}red{% else %}yellow{% endif %}">{{ r.get_status_display }}</span>
+        </div>
+        {% empty %}
+        <div class="empty-state"><i class="fas fa-paper-plane"></i><p>You haven't sent any requests yet.</p></div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

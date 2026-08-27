@@ -1,0 +1,47 @@
+{% comment %}
+Premium "Suggested Connections" widget. Include with:
+    {% include "partials/suggested_connections.html" with suggestions=suggestions %}
+where `suggestions` is the dict returned by konnect.views._suggested_connections:
+{people_you_may_know, suggested_creatives, suggested_customers, suggested_students}.
+{% endcomment %}
+{% if suggestions %}
+<div class="dashboard-section suggested-connections">
+    <h2>Suggested Connections</h2>
+
+    {% for group_title, group in suggestions.items %}
+    {% if group %}
+    <div class="suggestion-group">
+        <h4>
+            {% if group_title == "people_you_may_know" %}People You May Know
+            {% elif group_title == "suggested_creatives" %}Suggested Creatives
+            {% elif group_title == "suggested_customers" %}Suggested Customers
+            {% elif group_title == "suggested_students" %}Suggested Students
+            {% endif %}
+        </h4>
+        <div class="suggestion-card-row">
+            {% for person in group %}
+            <div class="suggestion-card">
+                <div class="avatar-circle">
+                    {% if person.display_avatar_url %}<img src="{{ person.display_avatar_url }}" alt="Profile avatar">{% else %}{{ person.username|first|upper }}{% endif %}
+                    {% if person.is_online %}<span class="online-dot" title="Online"></span>{% endif %}
+                </div>
+                <a href="{% url 'public_profile' person.username %}" style="color:inherit;"><strong>{{ person.get_full_name|default:person.username }}</strong></a>
+                <span class="suggestion-role">{{ person.creative_profile.headline|default:person.get_role_display }}</span>
+                <p>{{ person.bio|default:person.creative_profile.bio|truncatechars:70|default:"New on GeniuzLab." }}</p>
+                <div class="suggestion-card-actions">
+                    <form method="POST" action="{% url 'send_collaboration_request' person.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-outline btn-sm">Connect</button>
+                    </form>
+                    {% if person.creative_profile %}
+                    <a href="{% url 'creative_detail' person.creative_profile.id %}" class="btn-sm suggestion-view-link">View Profile</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}

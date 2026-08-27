@@ -1,0 +1,186 @@
+{
+  "company": {
+    "name": "GeniuzLab",
+    "tagline": "A creative technology ecosystem — marketplace, academy, AI tools, and VTU, all in one place.",
+    "description": "GeniuzLab is a premium creative technology ecosystem built to help a new generation of creatives learn, create, connect, and grow into sustainable, well-paid careers. It brings together Geniuz Academy (learning high-income digital skills), GeniuzKonnect (a marketplace for hiring and getting hired), Geniuz Graphics and GENIUZinMOTION (in-house creative studios), GeniuzSubs (everyday digital top-ups and bills), and an in-app wallet that ties it all together.",
+    "mission": "To make world-class creative and technology skills accessible to anyone willing to learn, and to build the tools, community, and opportunities that help them turn that skill into real income and lasting impact.",
+    "story": "GeniuzLab began with a simple observation — countless talented young creatives had the skill to build real careers in design, video, and technology, but not enough guidance, tools, or opportunity to turn that talent into income. What started as one person's passion for graphic design, video editing, and artificial intelligence grew step by step into a full ecosystem: Geniuz Academy for learning, GeniuzKonnect for hiring and getting hired, Geniuz Graphics and GENIUZinMOTION as in-house creative studios, and GeniuzSubs for everyday digital services.",
+    "values": [
+      "Excellence — every project, course, and product is held to a premium, professional standard.",
+      "Innovation — embracing new tools and technology, especially AI, to help creatives work smarter.",
+      "Community — creatives, clients, and mentors growing together and supporting each other's success.",
+      "Opportunity For All — skill and ambition matter more than background, so access is built for everyone."
+    ],
+    "track_record": "500+ students trained and 2,000+ creative projects delivered, with a 98% client satisfaction rate across services and projects.",
+    "about_url_name": "about"
+  },
+  "founder": {
+    "name": "Otsaje Genius Peter",
+    "title": "Founder & Chief Executive Officer",
+    "roles": [
+      "Founder of GeniuzLab",
+      "CEO",
+      "Creative Director",
+      "AI Enthusiast",
+      "Graphic Designer",
+      "Video Editor",
+      "Digital Entrepreneur"
+    ],
+    "bio": "Otsaje Genius Peter is the Founder and CEO of GeniuzLab, a creative technology ecosystem built to help a new generation of digital professionals learn, create, and earn. Blending a background in graphic design, video production, and artificial intelligence, he set out to build a single platform where creative skill, modern technology, and real economic opportunity meet. Under his leadership, GeniuzLab has grown into an ecosystem spanning creative education, an AI-powered marketplace for hiring and getting hired, in-house design and motion studios, and everyday digital services."
+  },
+  "academy": {
+    "label": "Geniuz Academy",
+    "description": "Learn high-income digital skills through practical mentorship, real projects, and a community built to help you grow. Every course is built around real-world projects you can add straight to your GeniuzLab creative portfolio.",
+    "url_name": "academy",
+    "courses": [
+      {
+        "key": "graphic_design",
+        "title": "Graphic Design",
+        "icon": "🎨",
+        "summary": "Learn how to create professional flyers, logos, branding designs, and visual experiences using modern creative tools.",
+        "topics": ["Design Fundamentals — colour theory, typography, layout, composition", "Branding & Identity — logos and complete visual identities for businesses", "Mobile Design Skills — professional flyers, posters, and social graphics using smartphone tools", "Real Projects — practical work you can showcase to clients"],
+        "url_name": "graphic_design"
+      },
+      {
+        "key": "video_editing",
+        "title": "Video Editing",
+        "icon": "🎬",
+        "summary": "Learn cinematic editing, storytelling, motion graphics, and professional video production skills.",
+        "topics": ["Video Production — professional editing workflow", "Cinematic Editing — engaging videos with effects", "Content Creation — editing for brands and social media"],
+        "url_name": "video_editing"
+      },
+      {
+        "key": "web_development",
+        "title": "Web Development",
+        "icon": "💻",
+        "summary": "Learn how to build modern websites, web applications, and digital products using professional development skills.",
+        "topics": ["Frontend Development — HTML, CSS, and JavaScript interfaces", "Backend Development — applications and databases", "Real Projects — websites and projects for your portfolio"],
+        "url_name": "web_development"
+      },
+      {
+        "key": "ai_productivity",
+        "title": "AI & Productivity",
+        "icon": "🤖",
+        "summary": "Learn how to use artificial intelligence tools to create faster, automate tasks, improve creativity, and increase productivity.",
+        "topics": ["AI Tools — modern AI tools for creative work", "Automation — automating daily tasks to save time", "AI Creativity — creating images, videos, and content with AI"],
+        "url_name": "ai_productivity"
+      }
+    ]
+  },
+  "services": {
+    "hire_creative": {
+      "label": "Hire a Creative",
+      "description": "Connect with professional designers, video editors, developers, and AI specialists on GeniuzKonnect — browse profiles by category, check portfolios and rates, and hire directly.",
+      "url_name": "hire_creative"
+    },
+    "graphics": {
+      "label": "Geniuz Graphics",
+      "description": "Geniuz Graphics brings together GeniuzLab's vetted design creatives to deliver premium branding, logo design, and visual identity. Services include Logo & Brand Identity, Social Media Design, Packaging & Print, and UI/UX Visuals.",
+      "url_name": "graphics"
+    },
+    "motion": {
+      "label": "GENIUZinMOTION",
+      "description": "GENIUZinMOTION is GeniuzLab's cinematic video editing and motion design brand — connecting brands and creators with skilled editors for reels, YouTube content, ads, and motion graphics. Services include Short-Form Editing, YouTube Production, Motion Graphics, and Ad Creatives.",
+      "url_name": "motion"
+    },
+    "subs": {
+      "label": "GeniuzSubs",
+      "description": "GeniuzSubs handles airtime, data plans, cable TV subscriptions, electricity bills, exam pins, and GeniuzLab Premium — all paid instantly from your GeniuzLab wallet, no card details needed each time.",
+      "url_name": "subs"
+    },
+    "portfolio": {
+      "label": "Portfolio",
+      "description": "A showcase of real work from GeniuzLab creatives and brands, built from actual client projects across design, video, and development.",
+      "url_name": "projects"
+    }
+  },
+  "accounts": {
+    "register": {
+      "label": "Register",
+      "description": "New to GeniuzLab? You can create a free account in a couple of minutes to start learning, hiring, or getting hired.",
+      "url_name": "register"
+    },
+    "login": {
+      "label": "Login",
+      "description": "Already have an account? Log in to access your dashboard, wallet, courses, and messages.",
+      "url_name": "login"
+    },
+    "password_reset": {
+      "label": "Reset Password",
+      "description": "Forgot your password? You can reset it securely — a reset link will be sent to the email address on your account.",
+      "url_name": "password_reset"
+    },
+    "profile": {
+      "label": "My Profile",
+      "description": "Manage your account details and profile information.",
+      "url_name": "profile"
+    }
+  },
+  "pricing": {
+    "note": "Pricing varies by course and service. The most current prices are always shown on each service or course page — this assistant won't quote numbers that could go stale.",
+    "url_name": "academy"
+  },
+  "faqs": [
+    {
+      "question": "What is GeniuzLab?",
+      "keywords": ["what is geniuzlab", "about geniuzlab", "what does geniuzlab do", "tell me about geniuzlab", "what is this platform"]
+    },
+    {
+      "question": "How do I create an account?",
+      "answer": "Tap Register and fill in your details to create a free GeniuzLab account — it only takes a couple of minutes.",
+      "keywords": ["how do i register", "how do i sign up", "create an account", "sign up", "how to register", "how do i create an account"]
+    },
+    {
+      "question": "How do I log in?",
+      "answer": "Tap Login and enter your registered email/username and password. If you've forgotten your password, use the 'Forgot Password' link on the login page to reset it.",
+      "keywords": ["how do i login", "how do i log in", "cant log in", "can't log in", "login problem", "sign in"]
+    },
+    {
+      "question": "I forgot my password, how do I reset it?",
+      "answer": "Go to the password reset page and enter the email address linked to your account — you'll receive a secure reset link by email. If you don't see it, check your spam folder or contact Customer Care.",
+      "keywords": ["forgot my password", "reset my password", "forgot password", "password reset", "cant remember password", "change my password"]
+    },
+    {
+      "question": "How do I pay for things on GeniuzLab?",
+      "answer": "Payments run through your GeniuzLab wallet — fund it via the supported payment gateways, then pay for courses, subscriptions, or hires from your balance. All your payments and receipts are tracked under your transaction history.",
+      "keywords": ["how do i pay", "payment methods", "how does payment work", "how do payments work", "how to pay"]
+    },
+    {
+      "question": "How do I fund my wallet?",
+      "answer": "Open your Wallet from the dashboard and choose 'Fund Wallet' — follow the prompts to top up via the supported payment gateway.",
+      "keywords": ["fund my wallet", "top up wallet", "add money", "load wallet", "deposit"]
+    },
+    {
+      "question": "How do I enroll in a course?",
+      "answer": "Open Geniuz Academy, pick a course — Graphic Design, Video Editing, Web Development, or AI & Productivity — and tap 'Enroll Now' on that course's page.",
+      "keywords": ["how do i enroll", "how to enroll", "join a course", "sign up for a course", "take a course"]
+    },
+    {
+      "question": "How do I become a creative on GeniuzLab?",
+      "answer": "Set up your creative profile from your dashboard, add your portfolio and rates, and you'll be visible to clients browsing GeniuzKonnect.",
+      "keywords": ["become a creative", "join as a creative", "sell my services", "list my portfolio", "register as creative", "how do i get hired"]
+    },
+    {
+      "question": "Is my data safe on GeniuzLab?",
+      "answer": "GeniuzLab takes user data and account security seriously. For specific policy details, please reach out to Customer Care.",
+      "keywords": ["is my data safe", "privacy", "data protection"]
+    },
+    {
+      "question": "How do I contact GeniuzLab?",
+      "answer": "You can reach GeniuzLab Customer Care on WhatsApp or by phone — I can hand you straight over.",
+      "keywords": ["contact us", "contact geniuzlab", "how do i contact you", "get in touch", "reach you"]
+    }
+  ],
+  "customer_care": {
+    "whatsapp_number": "2349138955730",
+    "whatsapp_link": "https://wa.me/2349138955730",
+    "call_numbers": ["09138955730", "09011141389"],
+    "whatsapp_button_label": "Chat with Customer Care on WhatsApp"
+  },
+  "business_hours": {
+    "note": "For current support hours, please ask Customer Care directly — the assistant is available anytime, but human support hours may vary."
+  },
+  "policies": {
+    "note": "For refund, cancellation, or other policy questions, please contact Customer Care directly so you get the accurate, up-to-date answer."
+  }
+}

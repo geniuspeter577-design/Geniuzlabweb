@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | GeniuzLab{% endblock %}
+{% block content %}
+<section class="dashboard">
+
+    <div class="dash-welcome glass-card">
+        <div class="dash-welcome-left">
+            <div class="avatar-circle avatar-lg">
+                {% if user.display_avatar_url %}<img src="{{ user.display_avatar_url }}" alt="Profile avatar">{% else %}{{ user.username|first|upper }}{% endif %}
+            </div>
+            <div>
+                <h1>Welcome back, {{ user.first_name|default:user.username|title }} 👋</h1>
+                <p>{% if creative_profile %}{{ creative_profile.get_category_display }} · {% endif %}Manage your creative journey from here.</p>
+            </div>
+        </div>
+        <div class="dash-welcome-right">
+            <div class="completion-ring" style="--pct:{{ profile_completion }};">
+                <span>{{ profile_completion }}%</span>
+            </div>
+            <div>
+                <p class="completion-label">Profile complete</p>
+                {% if profile_completion < 100 %}<a href="{% url 'edit_profile' %}" class="btn-outline btn-sm">Finish setup</a>{% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% include "partials/bible_verse_widget.html" %}
+
+    <div class="dashboard-grid">
+
+        <div class="dashboard-card">
+            <h3>Wallet Balance</h3>
+            <h2>₦{{ wallet_balance }}</h2>
+            <p><a href="{% url 'wallet_home' %}" style="color:#7ED957;">View wallet →</a></p>
+        </div>
+
+        <div class="dashboard-card">
+            <h3>Notifications</h3>
+            <h2>{{ unread_notifications }}</h2>
+            <p><a href="{% url 'notifications' %}" style="color:#7ED957;">View all →</a></p>
+        </div>
+
+        <div class="dashboard-card">
+            <h3>Job Applications</h3>
+            <h2>{{ applications_count }}</h2>
+            <p><a href="{% url 'my_applications' %}" style="color:#7ED957;">View applications →</a></p>
+        </div>
+
+        <div class="dashboard-card">
+            <h3>Jobs Posted</h3>
+            <h2>{{ jobs_posted }}</h2>
+            <p><a href="{% url 'post_job' %}" style="color:#7ED957;">Post a job →</a></p>
+        </div>
+
+        <div class="dashboard-card">
+            <h3>Messages</h3>
+            <h2>{{ conversations_count }}</h2>
+            <p><a href="{% url 'inbox' %}" style="color:#7ED957;">Open inbox →</a></p>
+        </div>
+
+        <div class="dashboard-card">
+            <h3>Creative Profile</h3>
+            <h2>{% if creative_profile %}Active{% else %}Not Set Up{% endif %}</h2>
+            <p><a href="{% url 'edit_creative_profile' %}" style="color:#7ED957;">{% if creative_profile %}Edit profile{% else %}Register as a creative{% endif %} →</a></p>
+        </div>
+
+    </div>
+
+    <div class="dashboard-section">
+        <h2>Quick Actions</h2>
+        <div class="quick-actions">
+            <a href="{% url 'hire_creative' %}" class="quick-action"><i class="fas fa-user-friends"></i><span>Hire a Creative</span></a>
+            <a href="{% url 'jobs' %}" class="quick-action"><i class="fas fa-briefcase"></i><span>Browse Jobs</span></a>
+            <a href="{% url 'collaborate' %}" class="quick-action"><i class="fas fa-handshake"></i><span>Collaborate</span></a>
+            {% if FEATURE_VTU_ENABLED %}
+            <a href="{% url 'initiate_payment' %}" class="quick-action"><i class="fas fa-wallet"></i><span>Fund Wallet</span></a>
+            <a href="{% url 'vtu_home' %}" class="quick-action"><i class="fas fa-bolt"></i><span>Buy Airtime/Data</span></a>
+            <a href="{% url 'subs' %}" class="quick-action"><i class="fas fa-star"></i><span>GeniuzSubs</span></a>
+            {% endif %}
+            <a href="{% url 'edit_profile' %}" class="quick-action"><i class="fas fa-user-cog"></i><span>Edit Profile</span></a>
+        </div>
+    </div>
+
+    <div class="dash-columns">
+
+        <div class="dashboard-section">
+            <h2>Recent Activity</h2>
+            {% for item in recent_activity %}
+            <div class="list-row">
+                <div class="activity-row">
+                    <div class="activity-icon"><i class="fas {{ item.icon }}"></i></div>
+                    <div class="activity-row-body">
+                        {{ item.text }}
+                        <p style="color:var(--gl-text-muted);font-size:13px;">{{ item.time|date:"M d, Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state"><i class="fas fa-clock"></i><p>No recent activity yet — actions like payments and notifications will show up here.</p></div>
+            {% endfor %}
+        </div>
+
+        <div class="dashboard-section">
+            <h2>Notifications Preview</h2>
+            {% for n in notifications_preview %}
+            <div class="list-row {% if not n.is_read %}list-row-unread{% endif %}">
+                <div>
+                    {{ n.message }}
+                    <p style="color:var(--gl-text-muted);font-size:13px;">{{ n.created_at|date:"M d, Y H:i" }}</p>
+                </div>
+                {% if not n.is_read %}<span class="badge badge-green">New</span>{% endif %}
+            </div>
+            {% empty %}
+            <div class="empty-state"><i class="fas fa-bell"></i><p>You're all caught up.</p></div>
+            {% endfor %}
+            {% if notifications_preview %}<a href="{% url 'notifications' %}" class="btn-outline btn-sm">View all notifications</a>{% endif %}
+        </div>
+
+    </div>
+
+</section>
+{% endblock %}

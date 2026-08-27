@@ -1,0 +1,7 @@
+**/__pycache__/
+ruffcache/
+# pytestcache 
+*venv
+venv/
+.env
+*sqlite3

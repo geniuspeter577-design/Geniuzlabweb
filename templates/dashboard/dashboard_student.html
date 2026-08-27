@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | GeniuzLab{% endblock %}
+{% block content %}
+<section class="dashboard">
+
+    {% with dash_subtitle="Continue your learning journey." %}
+        {% include "dashboard/_dash_header.html" %}
+    {% endwith %}
+
+    {% include "partials/bible_verse_widget.html" %}
+
+    <nav class="dash-tabs">
+        <button class="dash-tab active" data-target="tab-overview"><i class="fas fa-th-large"></i> Overview</button>
+        <button class="dash-tab" data-target="tab-courses"><i class="fas fa-book-open"></i> Courses <span class="tab-count">{{ enrolled_count }}</span></button>
+        <button class="dash-tab" data-target="tab-progress"><i class="fas fa-chart-line"></i> Progress</button>
+        <button class="dash-tab" data-target="tab-assignments"><i class="fas fa-tasks"></i> Assignments <span class="tab-count">{{ assignments|length }}</span></button>
+        <button class="dash-tab" data-target="tab-certificates"><i class="fas fa-award"></i> Certificates <span class="tab-count">{{ certificates|length }}</span></button>
+        <button class="dash-tab" data-target="tab-community"><i class="fas fa-users"></i> Community</button>
+        <button class="dash-tab" data-target="tab-tutor"><i class="fas fa-robot"></i> AI Tutor</button>
+        <button class="dash-tab" data-target="tab-notifications"><i class="fas fa-bell"></i> Notifications <span class="tab-count">{{ unread_notifications }}</span></button>
+        <button class="dash-tab" data-target="tab-settings"><i class="fas fa-cog"></i> Settings</button>
+    </nav>
+
+    <!-- OVERVIEW -->
+    <div class="dash-panel active" id="tab-overview">
+        <div class="dashboard-grid">
+            {% if FEATURE_VTU_ENABLED %}
+            <div class="dashboard-card">
+                <h3>Active Plan</h3>
+                <h2>{% if active_subscription %}{{ active_subscription.plan.name }}{% else %}None{% endif %}</h2>
+                <p><a href="{% url 'subs' %}">{% if active_subscription %}Manage plan{% else %}View plans{% endif %} →</a></p>
+            </div>
+            {% endif %}
+            <div class="dashboard-card">
+                <h3>Courses Enrolled</h3>
+                <h2>{{ enrolled_count }}</h2>
+                <p>Out of {{ course_progress|length }} available</p>
+            </div>
+            <div class="dashboard-card">
+                <h3>Certificates</h3>
+                <h2>{{ certificates|length }}</h2>
+                <p>Earned so far</p>
+            </div>
+            <div class="dashboard-card">
+                <h3>Wallet Balance</h3>
+                <h2>₦{{ wallet_balance }}</h2>
+                <p><a href="{% url 'wallet_home' %}">View wallet →</a></p>
+            </div>
+        </div>
+
+        <div class="dashboard-section">
+            <h2>Quick Actions</h2>
+            <div class="quick-actions">
+                <a href="{% url 'academy' %}" class="quick-action"><i class="fas fa-book-open"></i><span>Browse Courses</span></a>
+                {% if FEATURE_VTU_ENABLED %}
+                <a href="{% url 'subs' %}" class="quick-action"><i class="fas fa-star"></i><span>GeniuzSubs</span></a>
+                <a href="{% url 'initiate_payment' %}" class="quick-action"><i class="fas fa-wallet"></i><span>Fund Wallet</span></a>
+                <a href="{% url 'vtu_home' %}" class="quick-action"><i class="fas fa-bolt"></i><span>Buy Airtime/Data</span></a>
+                {% endif %}
+                <a href="{% url 'edit_profile' %}" class="quick-action"><i class="fas fa-user-cog"></i><span>Edit Profile</span></a>
+            </div>
+        </div>
+
+        {% include "dashboard/_dash_activity.html" %}
+    </div>
+
+    <!-- COURSES -->
+    <div class="dash-panel" id="tab-courses">
+        <div class="dashboard-section">
+            <h2>Courses</h2>
+            <div class="dashboard-grid">
+                {% for cp in course_progress %}
+                <div class="dashboard-card">
+                    <h3>{{ cp.course.icon }} {{ cp.course.title }}</h3>
+                    <p style="margin-bottom:14px;">{{ cp.course.summary }}</p>
+                    <div class="progress-track"><div class="progress-fill" style="width:{{ cp.progress }}%;"></div></div>
+                    <p style="font-size:12.5px;margin-bottom:14px;">{{ cp.progress }}% complete</p>
+                    {% if cp.enrolled and cp.has_modules %}
+                    <a href="{% url 'course_curriculum' cp.course.slug %}" class="btn-outline btn-sm">Continue</a>
+                    {% elif cp.enrolled %}
+                    <a href="{% url 'course_detail' cp.course.slug %}" class="btn-outline btn-sm">Continue</a>
+                    {% elif cp.payment_pending %}
+                    <span class="badge badge-grey">Payment under review</span>
+                    {% else %}
+                    <a href="{% url 'course_payment' cp.course.slug %}" class="btn-outline btn-sm">Enroll — ₦{{ cp.course.price }}</a>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="empty-state"><i class="fas fa-book-open"></i><p>No courses available yet.</p></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="dash-panel" id="tab-progress">
+        <div class="dashboard-section">
+            <h2>Progress</h2>
+            {% for cp in course_progress %}
+            {% if cp.enrolled %}
+            <div class="mini-card" style="align-items:stretch;flex-direction:column;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <h4>{{ cp.course.icon }} {{ cp.course.title }}</h4>
+                    <span class="badge {% if cp.progress >= 100 %}badge-green{% else %}badge-grey{% endif %}">{{ cp.progress }}%</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" style="width:{{ cp.progress }}%;"></div></div>
+                {% if cp.progress < 100 %}
+                <p style="font-size:12.5px;margin-top:8px;color:var(--gl-muted,#9aa1ac);">
+                    <i class="fas fa-tasks"></i> Progress advances as you submit and pass assignments — see the Assignments tab.
+                </p>
+                {% else %}
+                <p style="color:var(--gl-accent);font-size:13px;margin-top:8px;"><i class="fas fa-check-circle"></i> Course complete — certificate issued</p>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% empty %}
+            {% endfor %}
+            {% if enrolled_count == 0 %}
+            <div class="empty-state"><i class="fas fa-chart-line"></i><p>Enroll in a course to start tracking progress.</p></div>
+            {% endif %}
+
+            {% if skills_learned %}
+            <h3 style="margin:24px 0 12px;">Skills Learned</h3>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                {% for skill in skills_learned %}
+                <span class="badge badge-green">{{ skill }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ASSIGNMENTS -->
+    <div class="dash-panel" id="tab-assignments">
+        <div class="dashboard-section">
+            <h2>Assignments</h2>
+            {% for item in assignments %}
+            <div class="mini-card" style="align-items:stretch;flex-direction:column;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <h4>{{ item.assignment.title }} <span style="color:var(--gl-text-muted);font-weight:400;">— {{ item.assignment.course.title }}</span></h4>
+                    {% if item.submitted %}<span class="badge badge-green">Submitted</span>{% else %}<span class="badge badge-yellow">Pending</span>{% endif %}
+                </div>
+                <p style="margin-bottom:10px;">{{ item.assignment.description|default:"No description provided." }}{% if item.assignment.due_date %} · Due {{ item.assignment.due_date }}{% endif %}</p>
+                {% if not item.submitted %}
+                <form method="post" action="{% url 'submit_assignment' item.assignment.pk %}">
+                    {% csrf_token %}
+                    <textarea name="content" class="form-group" rows="3" placeholder="Write your submission..." style="width:100%;margin-bottom:8px;padding:10px;border-radius:8px;background:var(--gl-ov-04);border:1px solid var(--gl-border);color:var(--gl-text);"></textarea>
+                    <button type="submit" class="btn-outline btn-sm">Submit</button>
+                </form>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="empty-state"><i class="fas fa-tasks"></i><p>Enroll in a course to see its assignments here.</p></div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- CERTIFICATES -->
+    <div class="dash-panel" id="tab-certificates">
+        <div class="dashboard-section">
+            <h2>Certificates</h2>
+            <div class="dashboard-grid">
+                {% for cert in certificates %}
+                <a href="{% url 'certificate_detail' cert.certificate_id %}" class="certificate-card" style="display:block;text-decoration:none;color:inherit;cursor:pointer;">
+                    <i class="fas fa-award"></i>
+                    <h3>{{ cert.course.title }}</h3>
+                    <p>Issued {{ cert.issued_at|date:"M d, Y" }}</p>
+                    <p style="font-size:11px;color:var(--gl-text-faint);">ID: {{ cert.certificate_id }}</p>
+                </a>
+                {% empty %}
+                <div class="empty-state"><i class="fas fa-award"></i><p>Complete a course to earn your first certificate.</p></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- COMMUNITY -->
+    <div class="dash-panel" id="tab-community">
+        <div class="dashboard-section">
+            <h2>Community</h2>
+            <form method="post" action="{% url 'post_to_community' %}" style="margin-bottom:25px;">
+                {% csrf_token %}
+                <textarea name="content" rows="2" maxlength="500" placeholder="Share something with fellow students..." style="width:100%;margin-bottom:8px;padding:12px;border-radius:8px;background:var(--gl-ov-04);border:1px solid var(--gl-border);color:var(--gl-text);"></textarea>
+                <button type="submit" class="btn-outline btn-sm">Post</button>
+            </form>
+            <div class="glass-card">
+                {% for post in community_posts %}
+                <div class="community-post">
+                    <div class="avatar-circle">{% if post.user.display_avatar_url %}<img src="{{ post.user.display_avatar_url }}" alt="Profile avatar">{% else %}{{ post.user.username|first|upper }}{% endif %}</div>
+                    <div>
+                        <p><strong>{{ post.user.username }}</strong> — {{ post.content }}</p>
+                        <span>{{ post.created_at|date:"M d, Y H:i" }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state"><i class="fas fa-users"></i><p>Be the first to post in the Academy community.</p></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- AI TUTOR -->
+    <div class="dash-panel" id="tab-tutor">
+        <div class="dashboard-section">
+            <h2>AI Tutor</h2>
+            <div class="glass-card">
+                <h3><i class="fas fa-robot" style="color:var(--gl-accent);"></i> Got a question about a lesson?</h3>
+                <p>Your AI Tutor can explain concepts, review your progress, and suggest what to learn next.</p>
+                <button type="button" class="btn-outline btn-sm" style="margin-top:14px;" onclick="document.getElementById('glab-assistant-launcher').click();">Ask AI Tutor</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="dash-panel" id="tab-notifications">
+        <div class="dashboard-section">
+            <h2>Notifications</h2>
+            {% for n in notifications_preview %}
+            <div class="list-row {% if not n.is_read %}list-row-unread{% endif %}">
+                <div>{{ n.message }}<p style="color:var(--gl-text-muted);font-size:13px;">{{ n.created_at|date:"M d, Y H:i" }}</p></div>
+                {% if not n.is_read %}<span class="badge badge-green">New</span>{% endif %}
+            </div>
+            {% empty %}
+            <div class="empty-state"><i class="fas fa-bell"></i><p>You're all caught up.</p></div>
+            {% endfor %}
+            <a href="{% url 'notifications' %}" class="btn-outline btn-sm">View all notifications</a>
+        </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="dash-panel" id="tab-settings">
+        <div class="dashboard-section">
+            <h2>Settings</h2>
+            <div class="quick-actions">
+                <a href="{% url 'edit_profile' %}" class="quick-action"><i class="fas fa-user-cog"></i><span>Account Details</span></a>
+                <a href="{% url 'notification_preferences' %}" class="quick-action"><i class="fas fa-bell"></i><span>Notification Preferences</span></a>
+                {% if FEATURE_VTU_ENABLED %}
+                <a href="{% url 'subs' %}" class="quick-action"><i class="fas fa-star"></i><span>Manage Subscription</span></a>
+                {% endif %}
+                <a href="{% url 'logout' %}" class="quick-action"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></a>
+            </div>
+        </div>
+    </div>
+
+</section>
+{% include "dashboard/_dash_tabs_script.html" %}
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ course.title }} | Geniuz Academy{% endblock %}
+{% block meta_description %}{{ course.seo_description }}{% endblock %}
+{% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}{% url 'course_detail' course.slug %}{% endblock %}
+{% block og_title %}{{ course.title }} | Geniuz Academy{% endblock %}
+{% block og_description %}{{ course.seo_description }}{% endblock %}
+{% block og_type %}product{% endblock %}
+{% block og_image %}{% if course.image %}{{ request.scheme }}://{{ request.get_host }}{{ course.image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/generated/hero_academy.png' %}{% endif %}{% endblock %}
+{% block twitter_title %}{{ course.title }} | Geniuz Academy{% endblock %}
+{% block twitter_description %}{{ course.seo_description }}{% endblock %}
+{% block twitter_image %}{% if course.image %}{{ request.scheme }}://{{ request.get_host }}{{ course.image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/generated/hero_academy.png' %}{% endif %}{% endblock %}
+
+{% block content %}
+<section class="course-hero">
+    <div class="course-hero-text">
+        <p class="tag">{{ course.icon }} {{ course.get_level_display }}{% if course.duration %} · {{ course.duration }}{% endif %}</p>
+        <h1>Master <span>{{ course.title }}</span></h1>
+        <p>{{ course.summary }}</p>
+
+        <div class="course-buttons">
+            {% if enrollment %}
+                {% if has_modules %}
+                <a href="{% url 'course_curriculum' course.slug %}" class="hero-btn">Continue Learning</a>
+                {% else %}
+                <a href="{% url 'dashboard' %}" class="hero-btn">Go to Dashboard</a>
+                {% endif %}
+            {% elif payment_pending %}
+                <a href="{% url 'course_payment' course.slug %}" class="hero-btn">Payment Under Review</a>
+            {% elif request.user.is_authenticated %}
+                <a href="{% url 'enroll_course' course.slug %}" class="hero-btn">Enroll Now — ₦{{ course.price }}</a>
+            {% else %}
+                <a href="{% url 'register' %}" class="hero-btn">Enroll Now — ₦{{ course.price }}</a>
+            {% endif %}
+            <a href="{% url 'academy' %}" class="hero-link">Back to Academy →</a>
+        </div>
+    </div>
+
+    <div class="course-image">
+        {% if course.image %}
+        <img src="{{ course.image.url }}" alt="{{ course.title }} course banner">
+        {% else %}
+        <img src="{% static 'images/generated/hero_academy.png' %}" alt="{{ course.title }} course banner">
+        {% endif %}
+    </div>
+</section>
+
+<section class="course-info">
+    <h2>About This Course</h2>
+    <div class="glass-card" style="max-width:820px;margin:0 auto;text-align:left;">
+        <p style="white-space:pre-line;">{{ course.description|default:course.summary }}</p>
+        <div class="info-rows" style="margin-top:20px;">
+            {% if course.duration %}
+            <div class="info-row"><span class="info-label">Duration</span><span>{{ course.duration }}</span></div>
+            {% endif %}
+            <div class="info-row"><span class="info-label">Level</span><span>{{ course.get_level_display }}</span></div>
+            <div class="info-row"><span class="info-label">Price</span><span>₦{{ course.price }}</span></div>
+            <div class="info-row"><span class="info-label">Instructor</span><span>{{ course.instructor_name }}</span></div>
+        </div>
+        {% if course.instructor_bio %}
+        <p style="color:var(--gl-text-muted);font-size:13px;margin-top:14px;">{{ course.instructor_bio }}</p>
+        {% endif %}
+    </div>
+</section>
+
+{% if requirements or outcomes %}
+<section class="course-content">
+    {% if requirements %}
+    <div class="course-card">
+        <h3>📋 Requirements</h3>
+        <ul style="text-align:left;padding-left:20px;color:var(--gl-text-soft);line-height:1.8;">
+            {% for item in requirements %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if outcomes %}
+    <div class="course-card">
+        <h3>🎯 What You'll Learn</h3>
+        <ul style="text-align:left;padding-left:20px;color:var(--gl-text-soft);line-height:1.8;">
+            {% for item in outcomes %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</section>
+{% endif %}
+{% endblock %}

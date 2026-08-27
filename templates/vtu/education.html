@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}WAEC / JAMB | GeniuzSubs{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>WAEC / JAMB Pins</h1>
+        <p>Price is fetched live from the provider based on the exam type and quantity you choose.</p>
+    </div>
+    <form method="POST" class="form-box" data-guard-submit>
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Exam Type</label>
+            {{ form.exam_type }}
+        </div>
+        <div class="form-group">
+            <label>Quantity</label>
+            {{ form.quantity }}
+        </div>
+        <div class="form-group">
+            <label>Phone Number</label>
+            {{ form.phone }}
+        </div>
+        <button type="submit" class="btn-primary">Buy Pin(s)</button>
+        <a href="{% url 'vtu_home' %}" class="btn-outline">Cancel</a>
+    </form>
+</section>
+{% endblock %}

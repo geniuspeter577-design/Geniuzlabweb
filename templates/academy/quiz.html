@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ quiz.title }} | {{ course.title }}{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <p style="margin-bottom:6px;"><a href="{% url 'module_detail' module.pk %}" style="color:var(--gl-accent);"><i class="fas fa-arrow-left"></i> {{ module.title }}</a></p>
+        <h1>{{ quiz.title }}</h1>
+        <p>Score at least {{ quiz.pass_percent }}% to pass and unlock the next module.</p>
+    </div>
+
+    <div class="glass-card" style="max-width:720px;">
+        <form method="post">
+            {% csrf_token %}
+            {% for question in questions %}
+            <div class="form-group" style="margin-bottom:22px;">
+                <label style="display:block;margin-bottom:10px;font-weight:600;">{{ forloop.counter }}. {{ question.text }}</label>
+                {% for choice in question.choices.all %}
+                <label style="display:flex;align-items:center;gap:10px;margin-bottom:8px;font-weight:400;">
+                    <input type="radio" name="question_{{ question.pk }}" value="{{ choice.pk }}" required>
+                    {{ choice.text }}
+                </label>
+                {% endfor %}
+            </div>
+            {% empty %}
+            <p>This quiz doesn't have any questions yet.</p>
+            {% endfor %}
+            {% if questions %}
+            <button type="submit" class="btn">Submit Quiz</button>
+            {% endif %}
+        </form>
+    </div>
+</section>
+{% endblock %}

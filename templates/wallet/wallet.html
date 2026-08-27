@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}My Wallet | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>My Wallet</h1>
+        <p>Track your balance, fund your account and review activity.</p>
+    </div>
+
+    <div class="wallet-top">
+        <div class="wallet-balance-card">
+            <span class="wallet-balance-label">Available Balance</span>
+            <h2 class="wallet-balance-amount">₦{{ wallet.balance }}</h2>
+            <div class="wallet-balance-actions">
+                {% if FEATURE_VTU_ENABLED %}
+                <a href="{% url 'initiate_payment' %}" class="btn-primary"><i class="fas fa-plus"></i> Fund Wallet</a>
+                {% endif %}
+                <a href="{% url 'transaction_history' %}" class="btn-outline">Payment History</a>
+            </div>
+        </div>
+
+        <div class="wallet-stat-card">
+            <div class="wallet-stat">
+                <span class="wallet-stat-icon in"><i class="fas fa-arrow-down"></i></span>
+                <div>
+                    <p>This month, in</p>
+                    <h3>₦{{ month_credited }}</h3>
+                </div>
+            </div>
+            <div class="wallet-stat">
+                <span class="wallet-stat-icon out"><i class="fas fa-arrow-up"></i></span>
+                <div>
+                    <p>This month, out</p>
+                    <h3>₦{{ month_debited }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-section">
+        <h2>Recent Activity</h2>
+        {% for entry in entries %}
+        <div class="list-row">
+            <div class="activity-row">
+                <div class="activity-icon {% if entry.type == 'debit' %}activity-icon-debit{% endif %}">
+                    <i class="fas {% if entry.type == 'credit' %}fa-arrow-down{% else %}fa-arrow-up{% endif %}"></i>
+                </div>
+                <div class="activity-row-body">
+                    {{ entry.description|default:entry.get_type_display }}
+                    <p style="color:var(--gl-text-muted);font-size:13px;">{{ entry.created_at|date:"M d, Y H:i" }}</p>
+                </div>
+            </div>
+            <span class="badge badge-{% if entry.type == 'credit' %}green{% else %}red{% endif %}">
+                {% if entry.type == 'credit' %}+{% else %}-{% endif %}₦{{ entry.amount }}
+            </span>
+        </div>
+        {% empty %}
+        <div class="empty-state"><i class="fas fa-wallet"></i><p>No wallet activity yet.</p></div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

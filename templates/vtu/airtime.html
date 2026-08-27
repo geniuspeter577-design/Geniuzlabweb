@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Buy Airtime | GeniuzSubs{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header"><h1>Buy Airtime</h1></div>
+    <form method="POST" class="form-box" data-guard-submit>
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Network</label>
+            {{ form.network }}
+        </div>
+        <div class="form-group">
+            <label>Phone Number</label>
+            {{ form.phone }}
+        </div>
+        <div class="form-group">
+            <label>Amount (₦)</label>
+            {{ form.amount }}
+        </div>
+        <button type="submit" class="btn-primary">Buy Airtime</button>
+        <a href="{% url 'vtu_home' %}" class="btn-outline">Cancel</a>
+    </form>
+</section>
+{% endblock %}

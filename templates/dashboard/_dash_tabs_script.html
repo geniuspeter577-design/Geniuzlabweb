@@ -1,0 +1,19 @@
+<script>
+(function () {
+    document.querySelectorAll(".dash-tabs").forEach(function (nav) {
+        var tabs = nav.querySelectorAll(".dash-tab");
+        tabs.forEach(function (tab) {
+            tab.addEventListener("click", function () {
+                var target = tab.getAttribute("data-target");
+                tabs.forEach(function (t) { t.classList.remove("active"); });
+                tab.classList.add("active");
+                document.querySelectorAll(".dash-panel").forEach(function (p) {
+                    p.classList.remove("active");
+                });
+                var panel = document.getElementById(target);
+                if (panel) panel.classList.add("active");
+            });
+        });
+    });
+})();
+</script>

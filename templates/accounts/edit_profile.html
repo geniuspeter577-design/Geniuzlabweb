@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>Edit Profile</h1>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="form-box">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label>Cover Photo</label>
+            {% if profile_user.cover_photo %}
+                <div style="width:100%;max-width:500px;height:120px;border-radius:12px;overflow:hidden;margin-bottom:10px;background:#0002;">
+                    <img src="{{ profile_user.cover_photo.url }}" alt="Cover photo" style="width:100%;height:100%;object-fit:cover;">
+                </div>
+                <label style="font-weight:normal;font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+                    <input type="checkbox" name="remove_cover_photo" value="1"> Remove current cover photo
+                </label>
+            {% endif %}
+            <input type="file" name="cover_photo" accept="image/png,image/jpeg,image/gif,image/webp">
+        </div>
+
+        <div class="form-group">
+            <label>Profile Picture</label>
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+                <div class="avatar-circle avatar-lg">
+                    {% if profile_user.avatar %}<img src="{{ profile_user.avatar.url }}" alt="Profile avatar">{% else %}{{ profile_user.username|first|upper }}{% endif %}
+                </div>
+                {% if profile_user.avatar %}
+                <label style="font-weight:normal;font-size:13px;display:flex;align-items:center;gap:6px;">
+                    <input type="checkbox" name="remove_avatar" value="1"> Remove current picture
+                </label>
+                {% endif %}
+            </div>
+            <input type="file" name="avatar" accept="image/png,image/jpeg,image/gif,image/webp">
+        </div>
+
+        <div class="form-group">
+            <label>First Name</label>
+            <input type="text" name="first_name" value="{{ profile_user.first_name }}">
+        </div>
+        <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" name="last_name" value="{{ profile_user.last_name }}">
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" value="{{ profile_user.email }}">
+            <label style="font-weight:normal;font-size:13px;display:flex;align-items:center;gap:6px;margin-top:8px;">
+                <input type="checkbox" name="email_is_public" value="1" {% if profile_user.email_is_public %}checked{% endif %}>
+                Show my email publicly on my profile
+            </label>
+        </div>
+        <div class="form-group">
+            <label>Phone</label>
+            <input type="text" name="phone" value="{{ profile_user.phone }}">
+            <label style="font-weight:normal;font-size:13px;display:flex;align-items:center;gap:6px;margin-top:8px;">
+                <input type="checkbox" name="phone_is_public" value="1" {% if profile_user.phone_is_public %}checked{% endif %}>
+                Show my phone number publicly on my profile
+            </label>
+        </div>
+        <div class="form-group">
+            <label>Bio</label>
+            <textarea name="bio" rows="4">{{ profile_user.bio }}</textarea>
+        </div>
+        <button type="submit" class="btn-primary">Save Changes</button>
+        <a href="{% url 'profile' %}" class="btn-outline">Cancel</a>
+    </form>
+</section>
+{% endblock %}

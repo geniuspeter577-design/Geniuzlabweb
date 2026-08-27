@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}My Profile | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>My Profile</h1>
+        <p>Manage your account information.</p>
+    </div>
+
+    <div class="glass-card" style="max-width:600px;padding:0;overflow:hidden;">
+        <div style="width:100%;height:140px;background:{% if profile_user.cover_photo %}url('{{ profile_user.cover_photo.url }}') center/cover{% else %}linear-gradient(135deg,#7ED957,#2ecc71){% endif %};"></div>
+        <div style="padding:25px;">
+        <div style="display:flex;align-items:center;gap:20px;margin-bottom:25px;margin-top:-55px;">
+            <div class="avatar-circle" style="width:80px;height:80px;font-size:1.8rem;border:4px solid var(--gl-bg,#101418);">
+                {% if profile_user.display_avatar_url %}<img src="{{ profile_user.display_avatar_url }}" alt="Profile avatar">{% else %}{{ profile_user.username|first|upper }}{% endif %}
+            </div>
+            <div>
+                <h3 style="margin-bottom:4px;">{{ profile_user.username }}</h3>
+                <span class="badge badge-green">{{ profile_user.get_role_display }}</span>
+            </div>
+        </div>
+
+        <div class="info-rows">
+            <div class="info-row"><span class="info-label">Email</span><span>{{ profile_user.email|default:"Not set" }}</span></div>
+            <div class="info-row"><span class="info-label">Phone</span><span>{{ profile_user.phone|default:"Not set" }}</span></div>
+            <div class="info-row"><span class="info-label">Bio</span><span>{{ profile_user.bio|default:"No bio added yet." }}</span></div>
+            {% if customer_profile %}
+            <div class="info-row"><span class="info-label">Account Type</span><span>{{ customer_profile.get_profile_type_display }}</span></div>
+            {% if customer_profile.company_name %}<div class="info-row"><span class="info-label">Company</span><span>{{ customer_profile.company_name }}</span></div>{% endif %}
+            {% endif %}
+            <div class="info-row"><span class="info-label">Joined</span><span>{{ profile_user.date_joined|date:"M Y" }}</span></div>
+        </div>
+
+        <div style="margin-top:25px;display:flex;gap:15px;flex-wrap:wrap;">
+            {% if profile_user.role != 'student' and profile_user.role != 'instructor' %}
+            <a href="{% url 'public_profile' profile_user.username %}" class="btn-outline">View Public Profile</a>
+            {% endif %}
+            <a href="{% url 'edit_profile' %}" class="btn-primary">Edit Profile</a>
+            {% if profile_user.role == 'creative' %}
+                <a href="{% url 'edit_creative_profile' %}" class="btn-outline">Creative Profile & Portfolio</a>
+            {% endif %}
+            {% if profile_user.role == 'customer' %}
+                <a href="{% url 'edit_customer_profile' %}" class="btn-outline">Business Profile & Orders</a>
+            {% endif %}
+        </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

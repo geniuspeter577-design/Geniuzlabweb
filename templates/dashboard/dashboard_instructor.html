@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | GeniuzLab{% endblock %}
+{% block content %}
+<section class="dashboard">
+
+    {% with dash_subtitle="Instructor tools are being finished up for public beta." %}
+        {% include "dashboard/_dash_header.html" %}
+    {% endwith %}
+
+    {% include "partials/bible_verse_widget.html" %}
+
+    <div class="dashboard-section">
+        <div class="empty-state">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <h3>Your instructor dashboard is on its way</h3>
+            <p>
+                We're still building the full instructor experience (grading views, course
+                analytics, and student messaging) ahead of public beta. In the meantime, our
+                team manages course content, enrollments, and assignment grading directly.
+            </p>
+            <p style="color:var(--gl-text-muted);font-size:13px;">
+                Need something updated on one of your courses? Reach out to the GeniuzLab team
+                and we'll take care of it while this is being built.
+            </p>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <h3>Notifications</h3>
+            <h2>{{ unread_notifications }}</h2>
+            <p><a href="{% url 'notifications' %}">View notifications →</a></p>
+        </div>
+        <div class="dashboard-card">
+            <h3>Account</h3>
+            <h2><i class="fas fa-user-cog"></i></h2>
+            <p><a href="{% url 'edit_profile' %}">Edit profile →</a></p>
+        </div>
+        <div class="dashboard-card">
+            <h3>Academy</h3>
+            <h2><i class="fas fa-graduation-cap"></i></h2>
+            <p><a href="{% url 'academy' %}">Visit Geniuz Academy →</a></p>
+        </div>
+    </div>
+
+</section>
+{% endblock %}

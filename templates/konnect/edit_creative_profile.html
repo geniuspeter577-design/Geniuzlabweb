@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Creative Profile | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>Register as a Creative</h1>
+        <p>Build the profile clients and businesses will see when they hire on GeniuzLab.</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="form-box">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Headline</label>
+            <input type="text" name="headline" value="{{ profile.headline }}" placeholder="e.g. Senior Brand Designer">
+        </div>
+        <div class="form-group">
+            <label>Category</label>
+            <select name="category">
+                {% for value, label in profile.CATEGORY_CHOICES %}
+                <option value="{{ value }}" {% if profile.category == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Bio</label>
+            <textarea name="bio" rows="4">{{ profile.bio }}</textarea>
+        </div>
+        <div class="form-group">
+            <label>Skills (comma-separated)</label>
+            <input type="text" name="skills" value="{% for s in profile.skills.all %}{{ s.name }}{% if not forloop.last %}, {% endif %}{% endfor %}" placeholder="Logo Design, Branding, Figma">
+        </div>
+        <div class="form-group">
+            <label>Years of Experience</label>
+            <input type="number" name="experience_years" value="{{ profile.experience_years }}" min="0">
+        </div>
+        <div class="form-group">
+            <label>Hourly Rate (₦)</label>
+            <input type="number" step="0.01" name="hourly_rate" value="{{ profile.hourly_rate|default_if_none:'' }}">
+        </div>
+        <div class="form-group">
+            <label>Location</label>
+            <input type="text" name="location" value="{{ profile.location }}">
+        </div>
+        <div class="form-group">
+            <label>Services Offered (comma-separated)</label>
+            <input type="text" name="services_offered" value="{{ profile.services_offered }}" placeholder="Logo Design, Brand Guidelines, Social Media Kits">
+        </div>
+        <div class="form-group">
+            <label>Website</label>
+            <input type="url" name="website_url" value="{{ profile.website_url }}" placeholder="https://yourportfolio.com">
+        </div>
+        <div class="form-group">
+            <label>Instagram</label>
+            <input type="url" name="instagram_url" value="{{ profile.instagram_url }}" placeholder="https://instagram.com/yourhandle">
+        </div>
+        <div class="form-group">
+            <label>Twitter / X</label>
+            <input type="url" name="twitter_url" value="{{ profile.twitter_url }}" placeholder="https://x.com/yourhandle">
+        </div>
+        <div class="form-group">
+            <label>LinkedIn</label>
+            <input type="url" name="linkedin_url" value="{{ profile.linkedin_url }}" placeholder="https://linkedin.com/in/yourname">
+        </div>
+        <div class="form-group">
+            <label>Profile Photo</label>
+            <input type="file" name="avatar">
+        </div>
+        <button type="submit" class="btn-primary">Save Profile</button>
+        {% if profile.pk %}<a href="{% url 'add_portfolio_item' %}" class="btn-outline">Add Portfolio Item</a>{% endif %}
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | GeniuzLab{% endblock %}
+{% block content %}
+<section class="dashboard">
+
+    {% with dash_subtitle=creative_profile.get_category_display|default:"Manage your creative business from here." %}
+        {% include "dashboard/_dash_header.html" %}
+    {% endwith %}
+
+    {% include "partials/bible_verse_widget.html" %}
+
+    {% if not creative_profile %}
+    <div class="glass-card" style="margin-bottom:35px;">
+        <h3>Finish setting up your creative profile</h3>
+        <p>Add your headline, skills and portfolio so clients can find and hire you.</p>
+        <a href="{% url 'edit_creative_profile' %}" class="btn-outline btn-sm" style="margin-top:12px;display:inline-block;">Set Up Creative Profile</a>
+    </div>
+    {% endif %}
+
+    <nav class="dash-tabs">
+        <button class="dash-tab active" data-target="tab-overview"><i class="fas fa-th-large"></i> Overview</button>
+        <button class="dash-tab" data-target="tab-portfolio"><i class="fas fa-image"></i> Portfolio <span class="tab-count">{{ portfolio_count }}</span></button>
+        <button class="dash-tab" data-target="tab-earnings"><i class="fas fa-chart-line"></i> Earnings</button>
+        <button class="dash-tab" data-target="tab-analytics"><i class="fas fa-chart-bar"></i> Analytics</button>
+        <button class="dash-tab" data-target="tab-requests"><i class="fas fa-inbox"></i> Client Requests <span class="tab-count">{{ pending_requests_count }}</span></button>
+        <button class="dash-tab" data-target="tab-reviews"><i class="fas fa-star"></i> Reviews <span class="tab-count">{{ review_count }}</span></button>
+        <button class="dash-tab" data-target="tab-messages"><i class="fas fa-comments"></i> Messages</button>
+        <button class="dash-tab" data-target="tab-wallet"><i class="fas fa-wallet"></i> Wallet</button>
+        <button class="dash-tab" data-target="tab-availability"><i class="fas fa-toggle-on"></i> Availability</button>
+        <button class="dash-tab" data-target="tab-settings"><i class="fas fa-cog"></i> Settings</button>
+    </nav>
+
+    <!-- OVERVIEW -->
+    <div class="dash-panel active" id="tab-overview">
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <h3>Wallet Balance</h3>
+                <h2>₦{{ wallet_balance }}</h2>
+                <p><a href="{% url 'wallet_home' %}">View wallet →</a></p>
+            </div>
+            <div class="dashboard-card">
+                <h3>Portfolio Items</h3>
+                <h2>{{ portfolio_count }}</h2>
+                <p><a href="{% url 'add_portfolio_item' %}">Add work →</a></p>
+            </div>
+            <div class="dashboard-card">
+                <h3>Total Earnings</h3>
+                <h2>₦{{ earnings_total }}</h2>
+                <p>From completed services</p>
+            </div>
+            <div class="dashboard-card">
+                <h3>Avg. Rating</h3>
+                <h2>{% if average_rating %}{{ average_rating }} ★{% else %}—{% endif %}</h2>
+                <p>{{ review_count }} review{{ review_count|pluralize }}</p>
+            </div>
+        </div>
+
+        <div class="dashboard-section">
+            <h2>Quick Actions</h2>
+            <div class="quick-actions">
+                <a href="{% url 'jobs' %}" class="quick-action"><i class="fas fa-briefcase"></i><span>Browse Jobs</span></a>
+                <a href="{% url 'add_portfolio_item' %}" class="quick-action"><i class="fas fa-image"></i><span>Upload Project</span></a>
+                <a href="{% url 'collaborate' %}" class="quick-action"><i class="fas fa-handshake"></i><span>Collaborate</span></a>
+                {% if FEATURE_VTU_ENABLED %}
+                <a href="{% url 'initiate_payment' %}" class="quick-action"><i class="fas fa-wallet"></i><span>Fund Wallet</span></a>
+                {% endif %}
+                <a href="{% url 'edit_creative_profile' %}" class="quick-action"><i class="fas fa-user-cog"></i><span>Edit Creative Profile</span></a>
+            </div>
+        </div>
+
+        {% include "dashboard/_dash_activity.html" %}
+    </div>
+
+    <!-- PORTFOLIO / UPLOAD PROJECTS -->
+    <div class="dash-panel" id="tab-portfolio">
+        <div class="dashboard-section">
+            <h2>Portfolio</h2>
+            <div class="hero-buttons" style="margin-bottom:20px;">
+                <a href="{% url 'add_portfolio_item' %}" class="btn-outline btn-sm"><i class="fas fa-plus"></i> Upload Project</a>
+                <a href="{% url 'portfolio_dashboard' %}" class="btn-outline btn-sm"><i class="fas fa-th"></i> Manage All Projects</a>
+            </div>
+            {% if creative_profile.portfolio_items.all %}
+            <div class="dashboard-grid">
+                {% for item in creative_profile.portfolio_items.all|slice:":6" %}
+                <div class="dashboard-card">
+                    <span class="badge badge-grey">{{ item.get_category_display }}</span>
+                    <h3>{{ item.title }}</h3>
+                    <p>{{ item.description|truncatechars:80|default:"No description." }}</p>
+                    <p style="color:var(--gl-text-muted);font-size:13px;"><i class="fas fa-heart"></i> {{ item.like_count }} · <i class="fas fa-comment"></i> {{ item.comment_count }} · <i class="fas fa-eye"></i> {{ item.views_count }}</p>
+                    <div class="hero-buttons">
+                        <a href="{% url 'project_detail' item.pk %}" class="btn-outline btn-sm">View</a>
+                        <a href="{% url 'edit_portfolio_item' item.pk %}" class="btn-outline btn-sm">Edit</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state"><i class="fas fa-image"></i><p>No portfolio items yet — upload your first project to start attracting clients.</p></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- EARNINGS -->
+    <div class="dash-panel" id="tab-earnings">
+        <div class="dashboard-section">
+            <h2>Earnings</h2>
+            <div class="dashboard-card" style="margin-bottom:25px;">
+                <h3>Total Earned</h3>
+                <h2>₦{{ earnings_total }}</h2>
+                <p>From successfully completed client services</p>
+            </div>
+            {% for t in earnings_recent %}
+            <div class="mini-card">
+                <div class="mini-info">
+                    <h4>₦{{ t.amount }}</h4>
+                    <p>{{ t.description|default:"Service payment" }} · {{ t.created_at|date:"M d, Y" }}</p>
+                </div>
+                <span class="badge badge-green">Paid</span>
+            </div>
+            {% empty %}
+            <div class="empty-state"><i class="fas fa-chart-line"></i><p>Completed, paid service requests will show up here.</p></div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="dash-panel" id="tab-analytics">
+        <div class="dashboard-section">
+            <h2>Analytics</h2>
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3>Profile Views</h3>
+                    <h2>{{ creative_profile.profile_views|default:0 }}</h2>
+                    <p>All-time profile visits</p>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Client Requests</h3>
+                    <h2>{{ service_requests_count }}</h2>
+                    <p>{{ pending_requests_count }} pending</p>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Portfolio Items</h3>
+                    <h2>{{ portfolio_count }}</h2>
+                    <p>Published work samples</p>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Avg. Rating</h3>
+                    <h2>{% if average_rating %}{{ average_rating }}{% else %}—{% endif %}</h2>
+                    <p>Across {{ review_count }} review{{ review_count|pluralize }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CLIENT REQUESTS -->
+    <div class="dash-panel" id="tab-requests">
+        <div class="dashboard-section">
+            <h2>Client Requests</h2>
+            {% for req in client_requests %}
+            <div class="mini-card">
+                <div class="avatar-circle">{% if req.client.display_avatar_url %}<img src="{{ req.client.display_avatar_url }}" alt="Profile avatar">{% else %}{{ req.client.username|first|upper }}{% endif %}</div>
+                <div class="mini-info">
+                    <h4>{{ req.client.username }}{% if req.budget %} · ₦{{ req.budget }}{% endif %}</h4>
+                    <p>{{ req.message|truncatechars:90 }}</p>
+                </div>
+                <span class="badge {% if req.status == 'completed' %}badge-green{% elif req.status == 'declined' %}badge-red{% elif req.status == 'accepted' %}badge-yellow{% else %}badge-grey{% endif %}">{{ req.get_status_display }}</span>
+            </div>
+            {% empty %}
+            <div class="empty-state"><i class="fas fa-inbox"></i><p>No client requests yet.</p></div>
+            {% endfor %}
+            <a href="{% url 'my_service_requests' %}" class="btn-outline btn-sm">View all requests</a>
+        </div>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="dash-panel" id="tab-reviews">
+        <div class="dashboard-section">
+            <h2>Reviews</h2>
+            {% for review in reviews %}
+            <div class="mini-card">
+                <div class="avatar-circle">{% if review.reviewer.display_avatar_url %}<img src="{{ review.reviewer.display_avatar_url }}" alt="Profile avatar">{% else %}{{ review.reviewer.username|first|upper }}{% endif %}</div>
+                <div class="mini-info">
+                    <h4>{{ review.reviewer.username }}
+                        <span class="stars">{% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}<span class="dim">★</span>{% endif %}{% endfor %}</span>
+                    </h4>
+                    <p>{{ review.comment|default:"No comment left." }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state"><i class="fas fa-star"></i><p>Completed work will earn reviews here.</p></div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="dash-panel" id="tab-messages">
+        <div class="dashboard-section">
+            <h2>Messages</h2>
+            <div class="empty-state"><i class="fas fa-comments"></i><p>You have {{ conversations_count }} conversation{{ conversations_count|pluralize }}.</p></div>
+            <a href="{% url 'inbox' %}" class="btn-outline btn-sm">Open Inbox</a>
+        </div>
+    </div>
+
+    <!-- WALLET -->
+    <div class="dash-panel" id="tab-wallet">
+        <div class="dashboard-section">
+            <h2>Wallet</h2>
+            <div class="dashboard-card" style="margin-bottom:25px;">
+                <h3>Available Balance</h3>
+                <h2>₦{{ wallet_balance }}</h2>
+                <p><a href="{% url 'wallet_home' %}">Full history →</a></p>
+            </div>
+            {% for e in wallet_entries %}
+            <div class="mini-card">
+                <div class="mini-info">
+                    <h4>{{ e.get_type_display }} — ₦{{ e.amount }}</h4>
+                    <p>{{ e.description|default:"Wallet transaction" }} · {{ e.created_at|date:"M d, Y H:i" }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state"><i class="fas fa-wallet"></i><p>No wallet activity yet.</p></div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- AVAILABILITY -->
+    <div class="dash-panel" id="tab-availability">
+        <div class="dashboard-section">
+            <h2>Availability</h2>
+            <div class="glass-card">
+                <form method="post" action="{% url 'toggle_availability' %}">
+                    {% csrf_token %}
+                    <label class="availability-switch" style="margin-bottom:16px;">
+                        <input type="checkbox" onchange="this.form.submit()" name="_toggle" {% if creative_profile.is_available %}checked{% endif %}>
+                        <span class="switch-track"></span>
+                        <span>{% if creative_profile.is_available %}Open to new clients{% else %}Not currently available{% endif %}</span>
+                    </label>
+                    <div class="form-group">
+                        <label>Availability note</label>
+                        <input type="text" name="availability_note" maxlength="140" value="{{ creative_profile.availability_note }}" placeholder="e.g. Booking from Aug 1">
+                    </div>
+                    <button type="submit" class="btn-outline btn-sm">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="dash-panel" id="tab-settings">
+        <div class="dashboard-section">
+            <h2>Settings</h2>
+            <div class="quick-actions">
+                <a href="{% url 'edit_profile' %}" class="quick-action"><i class="fas fa-user-cog"></i><span>Account Details</span></a>
+                <a href="{% url 'edit_creative_profile' %}" class="quick-action"><i class="fas fa-briefcase"></i><span>Creative Profile</span></a>
+                <a href="{% url 'notification_preferences' %}" class="quick-action"><i class="fas fa-bell"></i><span>Notification Preferences</span></a>
+                <a href="{% url 'logout' %}" class="quick-action"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></a>
+            </div>
+        </div>
+    </div>
+
+</section>
+{% include "dashboard/_dash_tabs_script.html" %}
+{% endblock %}

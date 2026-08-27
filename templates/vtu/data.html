@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Buy Data | GeniuzSubs{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header"><h1>Buy Data</h1></div>
+    <form method="POST" class="form-box" id="data-form" data-guard-submit>
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Network</label>
+            {{ form.network }}
+        </div>
+        <div class="form-group">
+            <label>Phone Number</label>
+            {{ form.phone }}
+        </div>
+        <div class="form-group">
+            <label>Data Plan</label>
+            <select id="plan-select">
+                <option value="">Loading plans…</option>
+            </select>
+        </div>
+        {{ form.variation_code }}
+        {{ form.amount }}
+        <button type="submit" class="btn-primary" id="submit-btn" disabled>Select a plan first</button>
+        <a href="{% url 'vtu_home' %}" class="btn-outline">Cancel</a>
+    </form>
+</section>
+
+<script>
+const networkSelect = document.querySelector('#id_network');
+const planSelect = document.querySelector('#plan-select');
+const variationInput = document.querySelector('#id_variation_code');
+const amountInput = document.querySelector('#id_amount');
+const submitBtn = document.querySelector('#submit-btn');
+
+async function loadPlans(serviceId) {
+    planSelect.innerHTML = '<option value="">Loading plans…</option>';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Select a plan first';
+    try {
+        const res = await fetch(`/vtu/api/variations/${serviceId}/`);
+        const data = await res.json();
+        if (data.error || !data.variations || !data.variations.length) {
+            planSelect.innerHTML = '<option value="">No plans available — check VTU provider setup</option>';
+            return;
+        }
+        planSelect.innerHTML = '<option value="">Choose a plan</option>' + data.variations.map(v =>
+            `<option value="${v.variation_code}" data-amount="${v.variation_amount}">${v.name} — ₦${v.variation_amount}</option>`
+        ).join('');
+    } catch (e) {
+        planSelect.innerHTML = '<option value="">Could not load plans</option>';
+    }
+}
+
+networkSelect.addEventListener('change', () => loadPlans(networkSelect.value));
+planSelect.addEventListener('change', () => {
+    const opt = planSelect.options[planSelect.selectedIndex];
+    variationInput.value = planSelect.value;
+    amountInput.value = opt ? (opt.dataset.amount || '') : '';
+    submitBtn.disabled = !planSelect.value;
+    submitBtn.textContent = planSelect.value ? 'Buy Data' : 'Select a plan first';
+});
+
+loadPlans(networkSelect.value);
+</script>
+{% endblock %}

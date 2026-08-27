@@ -1,0 +1,14 @@
+Django>=5.0,<6.0
+python-dotenv>=1.0.0
+Pillow>=10.0.0
+gunicorn>=21.2.0
+whitenoise>=6.6.0
+requests>=2.31.0
+dj-database-url>=2.1.0
+psycopg2-binary>=2.9.9
+django-ratelimit>=4.1.0
+
+# Automation & AI assistant (see README_AUTOMATION.md)
+celery>=5.3.0
+redis>=5.0.0
+# openai>=1.30.0  # optional — only needed if OPENAI_API_KEY is set

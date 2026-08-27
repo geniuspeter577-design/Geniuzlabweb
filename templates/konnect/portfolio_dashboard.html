@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Portfolio Dashboard | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>Portfolio Dashboard</h1>
+        <p>Upload, edit and manage every project you've shared with GeniuzLab.</p>
+    </div>
+
+    <div class="hero-buttons" style="margin-bottom:30px;">
+        <a href="{% url 'add_portfolio_item' %}" class="btn-primary"><i class="fas fa-plus"></i> Upload New Project</a>
+        <a href="{% url 'public_profile' profile.user.username %}" class="btn-outline">View Public Profile</a>
+    </div>
+
+    {% if items %}
+    <div class="card-grid">
+        {% for item in items %}
+        <div class="glass-card">
+            {% if item.preview_url %}<img src="{{ item.preview_url }}" alt="Portfolio preview" style="width:100%;border-radius:12px;margin-bottom:12px;">{% endif %}
+            <span class="badge badge-grey">{{ item.get_category_display }}</span>
+            <h3 style="margin-top:8px;">{{ item.title }}</h3>
+            <p>{{ item.description|truncatechars:80 }}</p>
+            <p style="color:var(--gl-text-muted);font-size:13px;">
+                <i class="fas fa-heart"></i> {{ item.like_count }}
+                · <i class="fas fa-comment"></i> {{ item.comment_count }}
+                · <i class="fas fa-share"></i> {{ item.share_count }}
+                · <i class="fas fa-eye"></i> {{ item.views_count }}
+            </p>
+            <div class="hero-buttons" style="margin-top:14px;">
+                <a href="{% url 'project_detail' item.pk %}" class="btn-outline btn-sm">View</a>
+                <a href="{% url 'edit_portfolio_item' item.pk %}" class="btn-outline btn-sm"><i class="fas fa-pen"></i> Edit</a>
+                <form method="post" action="{% url 'delete_portfolio_item' item.pk %}" onsubmit="return confirm('Delete this project permanently?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-outline btn-sm" style="border-color:var(--gl-danger);color:var(--gl-danger);"><i class="fas fa-trash"></i> Delete</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-image"></i>
+        <p>No projects yet — <a href="{% url 'add_portfolio_item' %}" style="color:#7ED957;">upload your first project</a> to start attracting clients and appear in the Home Feed.</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

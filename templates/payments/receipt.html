@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Receipt | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="glass-card" style="max-width:500px;">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+            <div class="avatar-circle" style="background:var(--gl-accent-dim);color:var(--gl-accent);">
+                <i class="fas fa-receipt"></i>
+            </div>
+            <div>
+                <h2 style="margin:0;">Transaction Receipt</h2>
+                <p style="color:var(--gl-text-muted);font-size:13px;margin:0;">{{ transaction.created_at|date:"M d, Y H:i" }}</p>
+            </div>
+        </div>
+
+        <div class="info-rows">
+            <div class="info-row"><span class="info-label">Reference</span><span>{{ transaction.reference }}</span></div>
+            <div class="info-row"><span class="info-label">Amount</span><span>₦{{ transaction.amount }}</span></div>
+            <div class="info-row"><span class="info-label">Provider</span><span>{{ transaction.get_provider_display }}</span></div>
+            <div class="info-row"><span class="info-label">Purpose</span><span>{{ transaction.get_purpose_display }}</span></div>
+            <div class="info-row">
+                <span class="info-label">Status</span>
+                <span class="badge badge-{% if transaction.status == 'success' %}green{% elif transaction.status == 'failed' %}red{% else %}yellow{% endif %}">
+                    {{ transaction.get_status_display }}
+                </span>
+            </div>
+        </div>
+
+        <div style="margin-top:25px;">
+            <a href="{% url 'transaction_history' %}" class="btn-outline">View All Transactions</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

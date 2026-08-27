@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Report Project | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>Report "{{ project.title }}"</h1>
+        <p>Let us know what's wrong — our team will review it.</p>
+    </div>
+    <form method="POST" class="form-box">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Reason</label>
+            <select name="reason">
+                <option value="spam">Spam or misleading</option>
+                <option value="copyright">Copyright / stolen work</option>
+                <option value="inappropriate">Inappropriate content</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+        <div class="form-group"><label>Details (optional)</label><textarea name="details" rows="4"></textarea></div>
+        <button type="submit" class="btn-primary">Submit Report</button>
+    </form>
+</section>
+{% endblock %}

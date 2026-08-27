@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}{{ module.title }} | {{ course.title }}{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <p style="margin-bottom:6px;"><a href="{% url 'course_curriculum' course.slug %}" style="color:var(--gl-accent);"><i class="fas fa-arrow-left"></i> {{ course.title }} curriculum</a></p>
+        <h1>Module {{ module.order }}: {{ module.title }}</h1>
+        {% if module.description %}<p>{{ module.description }}</p>{% endif %}
+        {% if completed %}<span class="badge badge-green"><i class="fas fa-check-circle"></i> Module complete</span>{% endif %}
+    </div>
+
+    <div style="max-width:720px;display:flex;flex-direction:column;gap:20px;">
+
+        {% if lessons %}
+        <div class="glass-card">
+            <h3 style="margin-top:0;">Lessons</h3>
+            {% for item in lessons %}
+            <div class="mini-card" style="align-items:stretch;flex-direction:column;margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <h4 style="margin:0;">{{ item.lesson.order }}. {{ item.lesson.title }}</h4>
+                    {% if item.completed %}<span class="badge badge-green">Done</span>{% else %}<span class="badge badge-grey">Not done</span>{% endif %}
+                </div>
+                {% if item.lesson.content %}<div style="margin-bottom:10px;">{{ item.lesson.content|linebreaks }}</div>{% endif %}
+                {% if item.lesson.video_url %}
+                <p style="margin-bottom:10px;"><a href="{{ item.lesson.video_url }}" target="_blank" rel="noopener" style="color:var(--gl-accent);"><i class="fas fa-play-circle"></i> Watch lesson video</a></p>
+                {% endif %}
+                {% if item.lesson.resources.all %}
+                <div style="margin-bottom:10px;">
+                    {% for resource in item.lesson.resources.all %}
+                    <p style="margin:2px 0;font-size:13px;">
+                        <i class="fas fa-paperclip"></i>
+                        {% if resource.file %}<a href="{{ resource.file.url }}" target="_blank" style="color:var(--gl-accent);">{{ resource.title }}</a>
+                        {% elif resource.url %}<a href="{{ resource.url }}" target="_blank" rel="noopener" style="color:var(--gl-accent);">{{ resource.title }}</a>
+                        {% else %}{{ resource.title }}{% endif %}
+                    </p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% if not item.completed %}
+                <form method="post" action="{% url 'lesson_mark_complete' item.lesson.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-outline btn-sm">Mark as Complete</button>
+                </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if assignments %}
+        <div class="glass-card">
+            <h3 style="margin-top:0;">Assignment{{ assignments|length|pluralize }}</h3>
+            {% for item in assignments %}
+            <div class="mini-card" style="align-items:stretch;flex-direction:column;margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <h4 style="margin:0;">{{ item.assignment.title }}</h4>
+                    {% if item.passed %}<span class="badge badge-green">Passed</span>
+                    {% elif item.submitted %}<span class="badge badge-yellow">Submitted — awaiting review</span>
+                    {% else %}<span class="badge badge-grey">Not submitted</span>{% endif %}
+                </div>
+                <p style="margin-bottom:10px;">{{ item.assignment.description|default:"No description provided." }}{% if item.assignment.due_date %} · Due {{ item.assignment.due_date }}{% endif %}</p>
+                {% if not item.passed %}
+                <form method="post" action="{% url 'submit_assignment' item.assignment.pk %}">
+                    {% csrf_token %}
+                    <textarea name="content" rows="3" placeholder="Write your submission..." style="width:100%;margin-bottom:8px;padding:10px;border-radius:8px;background:var(--gl-ov-04);border:1px solid var(--gl-border);color:var(--gl-text);"></textarea>
+                    <button type="submit" class="btn-outline btn-sm">Submit</button>
+                </form>
+                {% if item.submitted %}<p style="font-size:12.5px;color:var(--gl-text-muted);margin-top:6px;">Please review this module before trying again if your last attempt wasn't marked passed.</p>{% endif %}
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if quiz %}
+        <div class="glass-card">
+            <h3 style="margin-top:0;">Module Quiz</h3>
+            <p>{{ quiz.title }} — pass mark {{ quiz.pass_percent }}%.</p>
+            {% if quiz_passed %}
+            <span class="badge badge-green"><i class="fas fa-check-circle"></i> Passed</span>
+            {% else %}
+            <a href="{% url 'quiz_take' quiz.pk %}" class="btn-outline btn-sm">Take Quiz</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if not lessons and not assignments and not quiz %}
+        <div class="empty-state"><i class="fas fa-book-open"></i><p>This module doesn't have any content yet.</p></div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

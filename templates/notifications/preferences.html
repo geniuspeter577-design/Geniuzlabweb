@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Notification Preferences | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>Notification Preferences</h1>
+        <p>Choose how and when GeniuzLab reaches you.</p>
+    </div>
+
+    <form method="post" class="app-card" style="max-width:640px;">
+        {% csrf_token %}
+
+        <h3 style="margin-top:0;">Channels</h3>
+        <label class="toggle-row">
+            <input type="checkbox" name="in_app_enabled" {% if pref.in_app_enabled %}checked{% endif %}>
+            In-app notifications
+        </label>
+        <label class="toggle-row">
+            <input type="checkbox" name="email_enabled" {% if pref.email_enabled %}checked{% endif %}>
+            Email notifications
+        </label>
+
+        <h3>Categories relevant to you</h3>
+        {% for code, label in role_categories %}
+        <label class="toggle-row">
+            <input type="checkbox" name="category" value="{{ code }}" {% if code not in pref.disabled_categories %}checked{% endif %}>
+            {{ label }}
+        </label>
+        {% endfor %}
+
+        <h3>Platform &amp; account</h3>
+        {% for code, label in system_categories %}
+        <label class="toggle-row">
+            <input type="checkbox" name="category" value="{{ code }}" {% if code not in pref.disabled_categories %}checked{% endif %}>
+            {{ label }}
+        </label>
+        {% endfor %}
+
+        <button type="submit" class="btn" style="margin-top:16px;">Save Preferences</button>
+    </form>
+</section>
+{% endblock %}

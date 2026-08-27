@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Collaborate | GeniuzLab{% endblock %}
+
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>Collaborate</h1>
+        <p>Partner with creatives, agencies and businesses on amazing projects.</p>
+    </div>
+
+    {% if user.is_authenticated %}
+    <div class="dashboard-section">
+        <h2>Your Connections</h2>
+        {% for c in connections %}
+        <div class="list-row">
+            <div>
+                {% if c.from_user == user %}
+                    You → <a href="{% url 'public_profile' c.to_user.username %}" style="color:#7ED957;"><strong>{{ c.to_user.username }}</strong></a>
+                {% else %}
+                    <a href="{% url 'public_profile' c.from_user.username %}" style="color:#7ED957;"><strong>{{ c.from_user.username }}</strong></a> → You
+                {% endif %}
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span class="badge badge-{% if c.status == 'accepted' %}green{% elif c.status == 'declined' %}red{% else %}yellow{% endif %}">{{ c.get_status_display }}</span>
+                {% if c.status == 'pending' and c.to_user == user %}
+                <form method="post" action="{% url 'respond_collaboration_request' c.pk 'accept' %}" style="display:inline;">{% csrf_token %}<button type="submit" class="btn-outline" style="padding:6px 14px;">Accept</button></form>
+                <form method="post" action="{% url 'respond_collaboration_request' c.pk 'decline' %}" style="display:inline;">{% csrf_token %}<button type="submit" class="btn-outline" style="padding:6px 14px;">Decline</button></form>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state"><i class="fas fa-handshake"></i><p>No collaboration requests yet.</p></div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% include "partials/suggested_connections.html" with suggestions=suggestions %}
+
+    <div class="dashboard-section">
+        <h2>Creatives You Could Team Up With</h2>
+        {% if creatives %}
+        <div class="card-grid">
+            {% for creative in creatives %}
+            <div class="glass-card">
+                <h3>{{ creative.headline|default:creative.user.username }}</h3>
+                <span class="badge badge-green">{{ creative.get_category_display }}</span>
+                <p style="margin-top:10px;">{{ creative.bio|truncatechars:80 }}</p>
+                {% if user.is_authenticated %}
+                <form method="POST" action="{% url 'send_collaboration_request' creative.user.id %}" style="margin-top:15px;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-outline" style="width:100%;">Send Collaboration Request</button>
+                </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="fas fa-users"></i><p>No creatives available to collaborate with yet.</p></div>
+        {% endif %}
+    </div>
+
+    {% if not user.is_authenticated %}
+    <div class="cta hidden" style="border-radius:20px;">
+        <div class="cta-content">
+            <a href="{% url 'register' %}" class="btn">Join GeniuzLab to Collaborate</a>
+        </div>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

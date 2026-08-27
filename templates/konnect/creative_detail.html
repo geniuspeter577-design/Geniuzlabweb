@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}{{ creative.user.username }} | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    {% if creative.user.cover_photo %}
+    <div style="max-width:800px;width:100%;height:140px;border-radius:12px;margin-bottom:20px;background:url('{{ creative.user.cover_photo.url }}') center/cover;"></div>
+    {% endif %}
+    <div class="glass-card" style="max-width:800px;margin-bottom:30px;">
+        <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px;">
+            <div class="avatar-circle" style="width:80px;height:80px;font-size:1.8rem;">
+                {% if creative.user.display_avatar_url %}<img src="{{ creative.user.display_avatar_url }}" alt="Profile avatar">{% else %}{{ creative.user.username|first|upper }}{% endif %}
+            </div>
+            <div>
+                <h2>{{ creative.user.get_full_name|default:creative.headline|default:creative.user.username }}</h2>
+                {% if creative.headline %}<p style="color:var(--gl-text-muted);margin:2px 0 8px;">{{ creative.headline }}</p>{% endif %}
+                <span class="badge badge-green">{{ creative.get_category_display }}</span>
+                {% if creative.is_available %}<span class="badge badge-green">Available</span>{% else %}<span class="badge badge-grey">Unavailable</span>{% endif %}
+            </div>
+        </div>
+
+        <p>{{ creative.bio|default:"No bio added yet." }}</p>
+
+        <div style="margin:20px 0;display:flex;gap:10px;flex-wrap:wrap;">
+            {% for skill in creative.skills.all %}
+                <span class="badge badge-grey">{{ skill.name }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="info-rows">
+            <div class="info-row"><span class="info-label">Experience</span><span>{{ creative.experience_years }} years</span></div>
+            {% if creative.hourly_rate %}<div class="info-row"><span class="info-label">Rate</span><span>₦{{ creative.hourly_rate }}/hr</span></div>{% endif %}
+            {% if creative.location %}<div class="info-row"><span class="info-label">Location</span><span>{{ creative.location }}</span></div>{% endif %}
+            <div class="info-row"><span class="info-label">Completed Projects</span><span>{{ creative.completed_projects_count }}</span></div>
+            {% if creative.services_offered %}<div class="info-row"><span class="info-label">Services</span><span>{{ creative.services_offered }}</span></div>{% endif %}
+            {% if creative.user.phone_is_public and creative.user.phone %}<div class="info-row"><span class="info-label">Phone</span><span>{{ creative.user.phone }}</span></div>{% endif %}
+            {% if creative.user.email_is_public %}<div class="info-row"><span class="info-label">Email</span><span>{{ creative.user.email }}</span></div>{% endif %}
+        </div>
+
+        {% if creative.social_links %}
+        <div style="margin:16px 0;display:flex;gap:12px;flex-wrap:wrap;">
+            {% for label, url in creative.social_links %}
+            <a href="{{ url }}" target="_blank" rel="noopener" class="badge badge-grey">{{ label }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if user.is_authenticated and user != creative.user %}
+        <div style="margin-top:25px;display:flex;gap:15px;flex-wrap:wrap;">
+            <a href="{% url 'request_service' creative.pk %}" class="btn-primary"><i class="fas fa-briefcase"></i> Hire Me</a>
+            <a href="{% url 'start_conversation' creative.user.id %}" class="btn-outline">Message</a>
+            {% if creative.user.phone_is_public and creative.user.phone %}<a href="tel:{{ creative.user.phone }}" class="btn-outline"><i class="fas fa-phone"></i> Call</a>{% endif %}
+            {% if creative.user.email_is_public %}<a href="mailto:{{ creative.user.email }}" class="btn-outline"><i class="fas fa-envelope"></i> Email</a>{% endif %}
+            <form method="post" action="{% url 'toggle_follow' creative.user.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" class="btn-outline">{% if is_following %}<i class="fas fa-user-check"></i> Following{% else %}<i class="fas fa-user-plus"></i> Follow{% endif %}</button>
+            </form>
+            <form method="post" action="{% url 'toggle_saved_creative' creative.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-outline">{% if is_saved %}<i class="fas fa-bookmark"></i> Saved{% else %}<i class="far fa-bookmark"></i> Save{% endif %}</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if creative.review_count %}
+    <div class="glass-card" style="max-width:800px;margin-bottom:30px;">
+        <h3 style="margin-bottom:16px;">Reviews · {{ creative.average_rating }} ★ ({{ creative.review_count }})</h3>
+        {% for review in reviews %}
+        <div class="mini-card">
+            <div class="avatar-circle">{% if review.reviewer.display_avatar_url %}<img src="{{ review.reviewer.display_avatar_url }}" alt="Profile avatar">{% else %}{{ review.reviewer.username|first|upper }}{% endif %}</div>
+            <div class="mini-info">
+                <h4>{{ review.reviewer.username }}
+                    <span class="stars">{% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}<span class="dim">★</span>{% endif %}{% endfor %}</span>
+                </h4>
+                <p>{{ review.comment|default:"No comment left." }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <h3 style="margin-bottom:20px;">Portfolio ({{ creative.portfolio_items.count }}) · {{ creative.user.followers.count }} followers</h3>
+    {% if creative.portfolio_items.all %}
+    <div class="card-grid">
+        {% for item in creative.portfolio_items.all %}
+        <a href="{% url 'project_detail' item.pk %}" class="glass-card" style="text-decoration:none;color:inherit;display:block;">
+            {% if item.preview_url %}<img src="{{ item.preview_url }}" alt="Portfolio preview" style="width:100%;border-radius:12px;margin-bottom:12px;">{% endif %}
+            <span class="badge badge-grey">{{ item.get_category_display }}</span>
+            <h3 style="margin-top:8px;">{{ item.title }}</h3>
+            <p>{{ item.description|truncatechars:90 }}</p>
+            <p style="color:var(--gl-text-muted);font-size:13px;"><i class="fas fa-heart"></i> {{ item.like_count }} · <i class="fas fa-eye"></i> {{ item.views_count }}</p>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><i class="fas fa-briefcase"></i><p>No portfolio items added yet.</p></div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Cable TV | GeniuzSubs{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header"><h1>Cable TV Subscription</h1></div>
+
+    <form method="POST" class="form-box" id="cable-form" data-guard-submit>
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Provider</label>
+            {{ form.provider }}
+        </div>
+        <div class="form-group">
+            <label>Smartcard / IUC Number</label>
+            {{ form.smartcard_number }}
+            <button type="button" id="verify-btn" class="btn-outline" style="margin-top:8px;">Verify</button>
+            <p id="verify-result" style="margin-top:8px;color:#7ED957;"></p>
+        </div>
+        <input type="hidden" name="recipient_name" id="recipient_name">
+
+        <div class="form-group" id="plan-group" style="display:none;">
+            <label>Package</label>
+            <select id="plan-select">
+                <option value="">Choose a package</option>
+            </select>
+        </div>
+        {{ form.variation_code }}
+        {{ form.amount }}
+
+        <button type="submit" class="btn-primary" id="submit-btn" disabled>Verify your smartcard first</button>
+        <a href="{% url 'vtu_home' %}" class="btn-outline">Cancel</a>
+    </form>
+</section>
+
+<script>
+const providerSelect = document.querySelector('#id_provider');
+const cardInput = document.querySelector('#id_smartcard_number');
+const verifyBtn = document.querySelector('#verify-btn');
+const verifyResult = document.querySelector('#verify-result');
+const recipientName = document.querySelector('#recipient_name');
+const planGroup = document.querySelector('#plan-group');
+const planSelect = document.querySelector('#plan-select');
+const variationInput = document.querySelector('#id_variation_code');
+const amountInput = document.querySelector('#id_amount');
+const submitBtn = document.querySelector('#submit-btn');
+
+function getCookie(name) {
+    const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return match ? match.pop() : '';
+}
+
+async function loadPlans(serviceId) {
+    const res = await fetch(`/vtu/api/variations/${serviceId}/`);
+    const data = await res.json();
+    if (data.error || !data.variations || !data.variations.length) {
+        planSelect.innerHTML = '<option value="">No packages available</option>';
+        return;
+    }
+    planSelect.innerHTML = '<option value="">Choose a package</option>' + data.variations.map(v =>
+        `<option value="${v.variation_code}" data-amount="${v.variation_amount}">${v.name} — ₦${v.variation_amount}</option>`
+    ).join('');
+}
+
+verifyBtn.addEventListener('click', async () => {
+    verifyResult.textContent = 'Verifying…';
+    const body = new URLSearchParams({
+        provider: providerSelect.value,
+        smartcard_number: cardInput.value,
+        csrfmiddlewaretoken: getCookie('csrftoken'),
+    });
+    try {
+        const res = await fetch('{% url "vtu_api_verify_cable" %}', { method: 'POST', body });
+        const data = await res.json();
+        if (data.error) {
+            verifyResult.textContent = data.error;
+            verifyResult.style.color = '#ff6b6b';
+            return;
+        }
+        recipientName.value = data.customer_name || '';
+        verifyResult.textContent = `Verified: ${data.customer_name || 'customer found'}`;
+        verifyResult.style.color = '#7ED957';
+        planGroup.style.display = 'block';
+        loadPlans(providerSelect.value);
+    } catch (e) {
+        verifyResult.textContent = 'Verification failed — try again.';
+        verifyResult.style.color = '#ff6b6b';
+    }
+});
+
+planSelect.addEventListener('change', () => {
+    const opt = planSelect.options[planSelect.selectedIndex];
+    variationInput.value = planSelect.value;
+    amountInput.value = opt ? (opt.dataset.amount || '') : '';
+    submitBtn.disabled = !planSelect.value;
+    submitBtn.textContent = planSelect.value ? 'Subscribe' : 'Select a package';
+});
+</script>
+{% endblock %}

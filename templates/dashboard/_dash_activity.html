@@ -1,0 +1,36 @@
+<div class="dash-columns">
+
+    <div class="dashboard-section">
+        <h2>Recent Activity</h2>
+        {% for item in recent_activity %}
+        <div class="list-row">
+            <div class="activity-row">
+                <div class="activity-icon"><i class="fas {{ item.icon }}"></i></div>
+                <div class="activity-row-body">
+                    {{ item.text }}
+                    <p style="color:var(--gl-text-muted);font-size:13px;">{{ item.time|date:"M d, Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state"><i class="fas fa-clock"></i><p>No recent activity yet — actions like payments and notifications will show up here.</p></div>
+        {% endfor %}
+    </div>
+
+    <div class="dashboard-section">
+        <h2>Notifications</h2>
+        {% for n in notifications_preview %}
+        <div class="list-row {% if not n.is_read %}list-row-unread{% endif %}">
+            <div>
+                {{ n.message }}
+                <p style="color:var(--gl-text-muted);font-size:13px;">{{ n.created_at|date:"M d, Y H:i" }}</p>
+            </div>
+            {% if not n.is_read %}<span class="badge badge-green">New</span>{% endif %}
+        </div>
+        {% empty %}
+        <div class="empty-state"><i class="fas fa-bell"></i><p>You're all caught up.</p></div>
+        {% endfor %}
+        {% if notifications_preview %}<a href="{% url 'notifications' %}" class="btn-outline btn-sm">View all notifications</a>{% endif %}
+    </div>
+
+</div>

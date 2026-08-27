@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}AI Image Generator | GeniuzLab{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/ai_hub.css' %}">
+{% endblock %}
+{% block content %}
+<section class="aihub-tool">
+    <div class="aihub-tool-header">
+        <p class="tag">🖼️ AI Hub</p>
+        <h1>AI Image <span>Generator</span></h1>
+        <p class="description">Describe what you want to see, and let AI generate it. Powered by {{ provider_name }}.</p>
+    </div>
+
+    {% if not configured %}
+    <div class="aihub-notice">
+        <i class="fas fa-exclamation-circle"></i>
+        <div>
+            <strong>Not set up yet.</strong>
+            The '{{ provider_name }}' provider has no API key configured on this server.
+            An admin needs to add one to the <code>.env</code> file (see <code>.env.example</code>) before this tool can generate images.
+        </div>
+    </div>
+    {% endif %}
+
+    <form id="aihub-image-form" class="aihub-form">
+        {% csrf_token %}
+        <textarea id="aihub-image-prompt" rows="3" maxlength="1000"
+            placeholder="e.g. A cozy reading nook by a rainy window, watercolor style"
+            {% if not configured %}disabled{% endif %}></textarea>
+        <button type="submit" class="btn" id="aihub-image-submit" {% if not configured %}disabled{% endif %}>
+            <i class="fas fa-wand-magic-sparkles"></i> Generate Image
+        </button>
+    </form>
+
+    <div id="aihub-image-status" class="aihub-status-line"></div>
+
+    <div id="aihub-image-result" class="aihub-result"></div>
+
+    <div class="aihub-history">
+        <h3>Your recent images</h3>
+        <div class="aihub-history-grid" id="aihub-image-history">
+            {% for img in recent_images %}
+            <div class="aihub-history-item">
+                {% if img.status == "done" and img.display_url %}
+                    <img src="{{ img.display_url }}" alt="{{ img.prompt }}">
+                {% elif img.status == "pending" %}
+                    <div class="aihub-history-placeholder"><i class="fas fa-spinner fa-spin"></i></div>
+                {% else %}
+                    <div class="aihub-history-placeholder aihub-history-failed"><i class="fas fa-triangle-exclamation"></i></div>
+                {% endif %}
+                <p>{{ img.prompt }}</p>
+            </div>
+            {% empty %}
+            <p class="aihub-empty">No images yet — generate your first one above.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script>window.GLAB_IMAGE_GENERATE_URL = "{% url 'ai_hub_image_generate' %}";</script>
+<script src="{% static 'js/ai_hub_image.js' %}"></script>
+{% endblock %}

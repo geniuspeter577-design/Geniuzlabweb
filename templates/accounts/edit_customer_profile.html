@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Business Profile | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>Business Profile</h1>
+        <p>Tell creatives a bit about who's hiring — this also unlocks a company name on your requests.</p>
+    </div>
+
+    <form method="POST" class="form-box">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Account Type</label>
+            <select name="profile_type">
+                {% for value, label in profile.PROFILE_TYPE_CHOICES %}
+                <option value="{{ value }}" {% if profile.profile_type == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Company Name (optional)</label>
+            <input type="text" name="company_name" value="{{ profile.company_name }}" placeholder="e.g. Acme Studios">
+        </div>
+        <button type="submit" class="btn-primary">Save Business Profile</button>
+        <a href="{% url 'profile' %}" class="btn-outline">Cancel</a>
+    </form>
+
+    <div class="glass-card" style="max-width:600px;margin-top:30px;">
+        <h3 style="margin-bottom:16px;">Project History & Service Requests</h3>
+        {% if service_requests %}
+            {% for req in service_requests %}
+            <div class="info-row">
+                <span class="info-label">{{ req.creative.user.username }}</span>
+                <span class="badge {% if req.status == 'completed' %}badge-green{% elif req.status == 'declined' %}badge-red{% else %}badge-grey{% endif %}">{{ req.get_status_display }}</span>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>No service requests yet. <a href="{% url 'hire_creative' %}" style="color:#7ED957;">Browse creatives</a> to get started.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

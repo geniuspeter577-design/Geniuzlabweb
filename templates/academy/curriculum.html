@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{{ course.title }} Curriculum | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>{{ course.icon }} {{ course.title }}</h1>
+        <p>Work through each module in order — the next one unlocks once you finish the current one.</p>
+    </div>
+
+    <div class="glass-card" style="max-width:720px;margin-bottom:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <h3 style="margin:0;">Your progress</h3>
+            <span class="badge {% if enrollment.progress_percent >= 100 %}badge-green{% else %}badge-grey{% endif %}">{{ enrollment.progress_percent }}%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:{{ enrollment.progress_percent }}%;"></div></div>
+        {% if enrollment.progress_percent >= 100 %}
+        <p style="color:var(--gl-accent);font-size:13px;margin-top:10px;"><i class="fas fa-check-circle"></i> Course complete — your certificate has been issued.</p>
+        {% endif %}
+    </div>
+
+    <div style="max-width:720px;display:flex;flex-direction:column;gap:16px;">
+        {% for item in modules %}
+        <div class="glass-card" style="{% if not item.unlocked %}opacity:.6;{% endif %}">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                <div>
+                    <h3 style="margin-bottom:4px;">Module {{ item.module.order }}: {{ item.module.title }}</h3>
+                    <p style="margin-bottom:0;">{{ item.module.description|default:"" }}</p>
+                </div>
+                {% if item.completed %}
+                <span class="badge badge-green"><i class="fas fa-check-circle"></i> Complete</span>
+                {% elif item.unlocked %}
+                <span class="badge badge-yellow"><i class="fas fa-play-circle"></i> In progress</span>
+                {% else %}
+                <span class="badge badge-grey"><i class="fas fa-lock"></i> Locked</span>
+                {% endif %}
+            </div>
+            <div style="margin-top:14px;">
+                {% if item.unlocked %}
+                <a href="{% url 'module_detail' item.module.pk %}" class="btn-outline btn-sm">
+                    {% if item.completed %}Review Module{% else %}Continue Module{% endif %}
+                </a>
+                {% else %}
+                <span style="color:var(--gl-text-muted);font-size:13px;">Complete the previous module to unlock this one.</span>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state"><i class="fas fa-book-open"></i><p>This course's curriculum hasn't been published yet — check back soon.</p></div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

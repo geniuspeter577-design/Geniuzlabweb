@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}GeniuzSubs | GeniuzLab{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="hero-left">
+        <p class="tag">⚡ A GeniuzLab Brand</p>
+        <h1>Geniuz<br><span>Subs</span></h1>
+        <p class="description">
+            Airtime, data, TV subscriptions, electricity and GeniuzLab Premium —
+            all your digital top-ups, powered by your GeniuzLab wallet.
+        </p>
+        <div class="hero-buttons">
+            <a href="{% url 'vtu_home' %}" class="btn">Buy Airtime, Data, TV & Electricity →</a>
+            <a href="{% url 'wallet_home' %}" class="btn">Fund Wallet</a>
+            <a href="#plans" class="btn-outline">View Premium Plans →</a>
+        </div>
+    </div>
+    <div class="hero-right">
+        <div class="logo-glow">
+            <div class="glow-circle"></div>
+            <img src="{% static 'images/logo.png' %}" alt="GeniuzSubs">
+        </div>
+    </div>
+</section>
+
+<section id="plans" class="ecosystem hidden">
+    <div class="eco-header">
+        <p class="tag">Plans & Services</p>
+        <h2>Everything <span>GeniuzSubs</span> Covers</h2>
+    </div>
+
+    {% if plans %}
+    <div class="card-grid">
+        {% for plan in plans %}
+        <div class="glass-card">
+            <span class="badge badge-green">{{ plan.get_category_display }}</span>
+            <h3 style="margin-top:12px;">{{ plan.name }}</h3>
+            <p>{{ plan.description }}</p>
+            <h2 style="margin:15px 0;color:#7ED957;">₦{{ plan.price }}</h2>
+            <form method="POST" action="{% url 'subscribe' plan.pk %}" data-guard-submit>
+                {% csrf_token %}
+                <button type="submit" class="btn-primary" style="width:100%;">Subscribe</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-bolt"></i>
+        <p>Subscription plans are being finalized — add them from the Django admin under GeniuzSubs.</p>
+    </div>
+    {% endif %}
+</section>
+
+<section class="cta hidden">
+    <div class="cta-content">
+        <p class="tag">How It Works</p>
+        <h2>Fund Your <span>Wallet & Subscribe</span></h2>
+        <p>Top up your GeniuzLab wallet, then subscribe to any plan instantly — no card details needed each time.</p>
+        <div class="hero-buttons">
+            <a href="{% url 'initiate_payment' %}" class="btn">Fund Wallet</a>
+            <a href="{% url 'my_subscriptions' %}" class="btn-outline">My Subscriptions</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

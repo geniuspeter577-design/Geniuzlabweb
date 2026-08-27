@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Edit Project | GeniuzLab{% endblock %}
+{% block content %}
+<section class="app-page">
+    <div class="app-header">
+        <h1>Edit Project</h1>
+        <p>Update "{{ project.title }}".</p>
+    </div>
+    <form method="POST" enctype="multipart/form-data" class="form-box">
+        {% csrf_token %}
+        <div class="form-group"><label>Title</label><input type="text" name="title" value="{{ project.title }}" required></div>
+        <div class="form-group"><label>Description</label><textarea name="description" rows="4">{{ project.description }}</textarea></div>
+        <div class="form-group">
+            <label>Category</label>
+            <select name="category">
+                {% for value, label in categories %}
+                <option value="{{ value }}" {% if project.category == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group"><label>External Link (optional)</label><input type="url" name="link" value="{{ project.link }}" placeholder="https://..."></div>
+        <div class="form-group"><label>Replace Cover Image (optional)</label><input type="file" name="image" accept="image/*"></div>
+
+        {% if project.media.all %}
+        <div class="form-group">
+            <label>Existing Gallery — check to remove</label>
+            <div class="card-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));">
+                {% for m in project.media.all %}
+                <div style="text-align:center;">
+                    {% if m.media_type == 'video' %}
+                    <video src="{{ m.file.url }}" style="width:100%;border-radius:8px;" muted></video>
+                    {% else %}
+                    <img src="{{ m.file.url }}" alt="Portfolio media" style="width:100%;border-radius:8px;">
+                    {% endif %}
+                    <label style="font-size:12px;display:block;margin-top:4px;">
+                        <input type="checkbox" name="remove_media" value="{{ m.pk }}"> Remove
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label>Add More Images/Videos</label>
+            <input type="file" name="gallery" accept="image/*,video/mp4,video/quicktime,video/webm" multiple>
+        </div>
+
+        <div style="display:flex;gap:15px;flex-wrap:wrap;">
+            <button type="submit" class="btn-primary">Save Changes</button>
+            <a href="{% url 'portfolio_dashboard' %}" class="btn-outline">Cancel</a>
+        </div>
+    </form>
+
+    <form method="POST" action="{% url 'delete_portfolio_item' project.pk %}" style="margin-top:20px;" onsubmit="return confirm('Delete this project permanently?');">
+        {% csrf_token %}
+        <button type="submit" class="btn-outline" style="border-color:var(--gl-danger);color:var(--gl-danger);"><i class="fas fa-trash"></i> Delete Project</button>
+    </form>
+</section>
+{% endblock %}
