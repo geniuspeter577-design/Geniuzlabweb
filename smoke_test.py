@@ -38,7 +38,7 @@ RESULTS = []  # (label, url, status, ok, note)
 
 
 def check(client, label, url_name, args=None, method="get", data=None,
-          expect_login_redirect=False, follow=True):
+          expect_login_redirect=False, follow=True, expected_status=None):
     try:
         url = reverse(url_name, args=args or [])
     except NoReverseMatch as e:
@@ -55,11 +55,13 @@ def check(client, label, url_name, args=None, method="get", data=None,
         return None
 
     status = resp.status_code
-    ok = status < 400
+    ok = status < 400 if expected_status is None else status == expected_status
     note = ""
 
     if status >= 500:
         note = "SERVER ERROR"
+    elif status == 404 and ok:
+        note = "expected while feature is disabled"
     elif status == 404:
         note = "NOT FOUND"
     elif expect_login_redirect and status == 200 and resp.redirect_chain:
@@ -99,7 +101,7 @@ def main():
     check(client, "Featured Project: Web Development", "project_showcase", args=["web-development"])
     check(client, "Geniuz Graphics", "graphics")
     check(client, "GENIUZinMOTION", "motion")
-    check(client, "GeniuzSubs", "subs")
+    check(client, "GeniuzSubs (feature disabled)", "subs", expected_status=404)
     check(client, "Hire Creative (marketplace)", "hire_creative")
     check(client, "Browse Jobs", "jobs")
     check(client, "Collaborate", "collaborate")

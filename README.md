@@ -2,6 +2,29 @@
 
 ## What this project now contains
 
+## Current status
+
+This is a feature-rich Django monolith with working local flows, but it is
+not production-ready yet. The highest-priority release blockers are:
+
+- migration consistency is now clean after generating the five pending
+  migrations for `academy`, `automation`, `konnect`, `motion`, and
+  `notifications`;
+- payment checkout/webhooks are not implemented, so no real gateway charge or
+  verified wallet credit occurs; and
+- deployment still needs a real environment, database, static collection,
+  email transport, and provider smoke tests.
+
+The detailed audit and working project documentation live in
+[`audit_result.md`](audit_result.md) and [`DOCs/`](DOCs/README.md).
+
+The restructuring foundations are staged in [`backend/`](backend/README.md),
+[`apps/`](apps/README.md), [`frontend/`](frontend/README.md),
+[`mobile/`](mobile/README.md), and [`infra/`](infra/README.md). Templates and
+static files remain at the root until their ownership is extracted.
+`backend.geniuzlab` and `apps.*` are now the canonical project and application
+packages; root `geniuzlab.*` modules are compatibility wrappers.
+
 - **accounts** — custom User model (roles: customer/creative/student/instructor/admin), register, login, logout, profile, edit profile
 - **konnect** — the marketplace: creative profiles + portfolios, hire-a-creative browsing, service requests, job posting/browsing/applications, collaboration requests
 - **academy** — Geniuz Academy hub at `/academy/` linking the 4 existing course pages
@@ -24,19 +47,24 @@ python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-cp .env.example .env            # then edit values as needed
+# Create a local .env, or export the values in your shell.
+export GENIUZLAB_DEBUG=True
+export GENIUZLAB_SECRET_KEY=local-development-only
 
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py seed_showcase_content   # optional — populates portfolio/motion showcase demo entries
-python manage.py runserver
+python backend/manage.py migrate
+python backend/manage.py createsuperuser
+python backend/manage.py seed_showcase_content   # optional — populates portfolio/motion showcase demo entries
+python backend/manage.py collectstatic --noinput
+python backend/manage.py runserver
 ```
+
+There is currently no committed `.env.example`; use
+[`DOCs/OPERATIONS.md`](DOCs/OPERATIONS.md) as the environment checklist.
 
 Then visit `http://127.0.0.1:8000/`.
 
-> This project's database was regenerated (models changed significantly),
-> so `db.sqlite3` was removed from this package. Running `migrate` above
-> will create a fresh one.
+> The committed local `db.sqlite3` may be empty or stale. Treat migrations as
+> the source of truth and run `python manage.py migrate` before testing pages.
 
 > `seed_showcase_content` creates one demo "GeniuzLab Studio" creative
 > profile with a few example portfolio/motion entries, using the
@@ -47,16 +75,18 @@ Then visit `http://127.0.0.1:8000/`.
 
 ## Payments — connecting real gateways
 
-Payments are architected so the app works end-to-end today (transactions,
-receipts, wallet crediting) even with **no live keys configured** — new
-transactions are simply recorded as `pending` until a provider is wired up.
+Payments currently provide transaction records, receipts, and admin-facing
+status scaffolding. They do not yet perform a real checkout or verified wallet
+credit, even with provider keys configured — new transactions are recorded as
+`pending` until a provider lifecycle is implemented.
 
 To go live with a provider, set its keys in `.env` (see `.env.example`),
 then implement the actual checkout call in
 `payments/views.py::initiate_payment` (redirect to the provider's hosted
 checkout, or call their charge API) and add a webhook/callback view that
-calls `transaction.mark_success()`. The `Transaction` model, admin, history
-page and receipt page are already built and don't need to change.
+authenticates the event, transitions the transaction idempotently, and credits
+the wallet only after verified success. The `Transaction` model, admin,
+history page and receipt page are foundations, not a complete integration.
 
 ## AI Hub — Chat, Image, Video
 
@@ -77,20 +107,17 @@ project — chat, images, and any future OpenAI feature all read it.
 
 ## Known limitations / what's still open
 
-- This build could not be executed in the sandbox this was built in
-  (no internet access to install Django, and the container used to make
-  this round of changes also has no network access to run `pip install`
-  or `manage.py check`) — Python/CSS/JS/template syntax and Django
-  migration structure were verified statically (`py_compile`, brace/tag
-  balance checks, `node --check`) but not against a live `runserver`.
-  Run `python manage.py check` and `python manage.py migrate` first
-  after pulling this down.
+- Verified 2026-08-28: all 52 Django tests pass after `collectstatic`,
+  and `makemigrations --check --dry-run` now reports no changes after the
+  generated migrations were applied locally. Review them in staging before
+  deployment.
 - Payment gateway checkout calls are stubbed (see above) — no live charge
   is made yet.
 - Chat (direct messaging, the `chat` app) is simple request/response
   messaging (no WebSockets/live updates). AI Hub Chat streams via
   Server-Sent Events, which is separate from this.
-- No automated test suite has been added yet.
+- Automated tests exist, but coverage is concentrated in `academy` and
+  `ai_hub`; most app test modules remain empty stubs.
 - Image uploads (avatars, portfolio images) need `Pillow` (already in
   `requirements.txt`) and `MEDIA_ROOT` served in production via your web
   server or a storage backend (S3, etc.) — currently only auto-served
@@ -105,3 +132,9 @@ project — chat, images, and any future OpenAI feature all read it.
   (`StreamingHttpResponse` over a `requests` streaming call) — fine at
   moderate traffic, but a high-concurrency production deployment would
   benefit from an ASGI/async view or a task-queue-backed approach later.
+- VTU is feature-flagged off by default. Wallet/subscription/VTU flows need
+  server-side idempotency and background reconciliation before real money
+  movement is enabled.
+- There is no committed `.env.example`, CI pipeline, deployment manifest,
+  health check, structured production logging policy, or backup/restore
+  runbook yet.

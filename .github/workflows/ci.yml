@@ -1,0 +1,46 @@
+name: Django CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      DJANGO_SETTINGS_MODULE: backend.geniuzlab.settings
+      GENIUZLAB_DEBUG: "True"
+      GENIUZLAB_SECRET_KEY: ci-only-not-a-production-secret
+      GENIUZLAB_ALLOWED_HOSTS: testserver,localhost,127.0.0.1
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Check migration consistency
+        run: python backend/manage.py makemigrations --check --dry-run
+
+      - name: Apply migrations
+        run: python backend/manage.py migrate --noinput
+
+      - name: Run deployment checks
+        run: python backend/manage.py check --deploy
+
+      - name: Collect static assets
+        run: python backend/manage.py collectstatic --noinput
+
+      - name: Run tests
+        run: python backend/manage.py test --noinput
