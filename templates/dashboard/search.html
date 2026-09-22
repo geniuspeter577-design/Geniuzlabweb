@@ -27,7 +27,7 @@
         <h3 style="margin-bottom:14px;">Skills</h3>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:35px;">
             {% for skill in skills %}
-            <a href="{% url 'hire_creative' %}?q={{ skill.name }}" class="badge badge-grey" style="text-decoration:none;">{{ skill.name }}</a>
+            <a href="{% url 'hire_creative' %}?q={{ skill.name|urlencode }}" class="badge badge-grey" style="text-decoration:none;">{{ skill.name }}</a>
             {% endfor %}
         </div>
         {% endif %}

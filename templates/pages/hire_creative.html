@@ -17,7 +17,7 @@
     <div class="filter-bar">
         <a href="{% url 'hire_creative' %}" class="{% if not selected_category %}active{% endif %}">All</a>
         {% for value, label in categories %}
-        <a href="?category={{ value }}" class="{% if selected_category == value %}active{% endif %}">{{ label }}</a>
+        <a href="?category={{ value }}&amp;q={{ query|urlencode }}" class="{% if selected_category == value %}active{% endif %}">{{ label }}</a>
         {% endfor %}
     </div>
 

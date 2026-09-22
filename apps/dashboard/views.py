@@ -360,7 +360,7 @@ def project_detail(request, pk):
     from apps.konnect.models import PortfolioItem, Follow, SavedProject
 
     item = get_object_or_404(
-        PortfolioItem.objects.select_related("creative__user").prefetch_related(
+        PortfolioItem.objects.filter(is_reported_hidden=False).select_related("creative__user").prefetch_related(
             "media", "comments__user"
         ),
         pk=pk,

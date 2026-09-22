@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.contrib.auth import authenticate, login, logout, get_user_model, password_validation
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -28,8 +28,14 @@ def register(request):
             messages.error(request, "Please fill in all required fields.")
             return redirect("register")
 
-        if confirm_password and password != confirm_password:
+        if password != confirm_password:
             messages.error(request, "Passwords do not match.")
+            return redirect("register")
+
+        try:
+            password_validation.validate_password(password)
+        except ValidationError as exc:
+            messages.error(request, " ".join(exc.messages))
             return redirect("register")
 
         if User.objects.filter(username=username).exists():

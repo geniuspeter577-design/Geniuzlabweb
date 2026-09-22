@@ -20,14 +20,30 @@ class RegistrationTests(TestCase):
 		self.assertFalse(user.is_staff)
 
 	def test_public_registration_allows_student_role(self):
-		self.client.post(reverse("register"), {
+		response = self.client.post(reverse("register"), {
 			"username": "student-user",
 			"email": "student@example.com",
 			"password": "StrongPass123!",
 			"confirm_password": "StrongPass123!",
 			"role": "student",
 		})
+		self.assertRedirects(response, reverse("dashboard"))
 		self.assertEqual(User.objects.get(username="student-user").role, "student")
+		self.client.get(reverse("logout"))
+		response = self.client.post(reverse("login"), {
+			"username": "student-user", "password": "StrongPass123!",
+		})
+		self.assertRedirects(response, reverse("dashboard"))
+		self.assertTrue(response.wsgi_request.user.is_authenticated)
+
+	def test_registration_requires_password_confirmation(self):
+		response = self.client.post(reverse("register"), {
+			"username": "missing-confirmation",
+			"email": "missing-confirmation@example.com",
+			"password": "StrongPass123!",
+		})
+		self.assertRedirects(response, reverse("register"))
+		self.assertFalse(User.objects.filter(username="missing-confirmation").exists())
 
 
 class LoginRedirectTests(TestCase):

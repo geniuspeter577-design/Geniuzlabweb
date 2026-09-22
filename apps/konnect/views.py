@@ -263,7 +263,7 @@ def request_service(request, pk):
             budget=request.POST.get("budget") or None,
             conversation=conversation,
         )
-        notify(creative.user, f"{request.user.username} requested your services.", link="/hire-creative/requests/", category="client_request")
+        notify(creative.user, f"{request.user.username} requested your services.", link="/service-requests/", category="client_request")
         messages.success(request, "Your request has been sent to the creative.")
         return redirect("creative_detail", pk=pk)
 
@@ -288,7 +288,7 @@ def respond_service_request(request, pk, action):
         notify(
             service_request.client,
             f"{request.user.username} accepted your service request.",
-            link="/hire-creative/requests/", category="client_request",
+            link="/service-requests/", category="client_request",
         )
         messages.success(request, "Request accepted.")
     elif action == "decline":
@@ -296,7 +296,7 @@ def respond_service_request(request, pk, action):
         notify(
             service_request.client,
             f"{request.user.username} declined your service request.",
-            link="/hire-creative/requests/", category="client_request",
+            link="/service-requests/", category="client_request",
         )
         messages.info(request, "Request declined.")
     service_request.save(update_fields=["status"])
@@ -543,7 +543,7 @@ def home_feed(request):
     if category:
         projects = projects.filter(category=category)
 
-    paginator = Paginator(projects, 10)
+    paginator = Paginator(projects.order_by("-created_at", "-pk"), 10)
     page_obj = paginator.get_page(request.GET.get("page"))
 
     saved_ids = set()
@@ -589,7 +589,13 @@ def discover(request):
 
     top_creatives = CreativeProfile.objects.filter(is_available=True).select_related("user").annotate(
         project_count=Count("portfolio_items", distinct=True)
-    ).order_by("-profile_views")[:6]
+    )
+    if category:
+        top_creatives = top_creatives.filter(
+            portfolio_items__category=category,
+            portfolio_items__is_reported_hidden=False,
+        ).distinct()
+    top_creatives = top_creatives.order_by("-profile_views")[:6]
 
     return render(request, "dashboard/discover.html", {
         "page_obj": page_obj,
@@ -639,7 +645,7 @@ def search(request):
 @login_required
 @require_POST
 def toggle_like(request, pk):
-    project = get_object_or_404(PortfolioItem, pk=pk)
+    project = get_object_or_404(_visible_projects(), pk=pk)
     like, created = ProjectLike.objects.get_or_create(project=project, user=request.user)
     if not created:
         like.delete()
@@ -662,7 +668,7 @@ def toggle_like(request, pk):
 
 @login_required
 def add_comment(request, pk):
-    project = get_object_or_404(PortfolioItem, pk=pk)
+    project = get_object_or_404(_visible_projects(), pk=pk)
     if request.method == "POST":
         text = request.POST.get("text", "").strip()
         if text:
@@ -689,7 +695,7 @@ def delete_comment(request, pk):
 @login_required
 @require_POST
 def share_project(request, pk):
-    project = get_object_or_404(PortfolioItem, pk=pk)
+    project = get_object_or_404(_visible_projects(), pk=pk)
     ProjectShare.objects.create(project=project, user=request.user)
     if request.user != project.creative.user:
         notify(
@@ -707,7 +713,7 @@ def share_project(request, pk):
 @login_required
 @require_POST
 def toggle_save_project(request, pk):
-    project = get_object_or_404(PortfolioItem, pk=pk)
+    project = get_object_or_404(_visible_projects(), pk=pk)
     saved, created = SavedProject.objects.get_or_create(user=request.user, project=project)
     if not created:
         saved.delete()
@@ -720,7 +726,7 @@ def toggle_save_project(request, pk):
 
 @login_required
 def report_project(request, pk):
-    project = get_object_or_404(PortfolioItem, pk=pk)
+    project = get_object_or_404(_visible_projects(), pk=pk)
     if request.method == "POST":
         ProjectReport.objects.create(
             project=project, reporter=request.user,
