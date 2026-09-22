@@ -353,6 +353,9 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
 # Production security hardening — only applied when DEBUG is off, so local
 # development (DEBUG=True) is unaffected.
 # ---------------------------------------------------------------------------
+CSRF_TRUSTED_ORIGINS = [
+    o.strip() for o in os.environ.get("GENIUZLAB_CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()
+]
 if not DEBUG:
     SECURE_SSL_REDIRECT = env_bool("GENIUZLAB_SECURE_SSL_REDIRECT", True)
     SESSION_COOKIE_SECURE = True
@@ -362,9 +365,6 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
-    CSRF_TRUSTED_ORIGINS = [
-        o.strip() for o in os.environ.get("GENIUZLAB_CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()
-    ]
     if not CSRF_TRUSTED_ORIGINS:
         raise RuntimeError(
             "GENIUZLAB_CSRF_TRUSTED_ORIGINS must be set (e.g. https://geniuzlab.com) "
