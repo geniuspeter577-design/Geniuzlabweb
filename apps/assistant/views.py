@@ -2,6 +2,7 @@ import json
 
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django_ratelimit.decorators import ratelimit
 
 from .engine import get_reply
 from .models import AssistantLog
@@ -10,7 +11,10 @@ SESSION_KEY = "glab_assistant_ctx"
 
 
 @require_POST
+@ratelimit(key="ip", rate="30/h", method="POST", block=True)
 def ask(request):
+    if len(request.body or b"") > 12000:
+        return JsonResponse({"error": "Message is too large."}, status=413)
     try:
         payload = json.loads(request.body or "{}")
     except json.JSONDecodeError:

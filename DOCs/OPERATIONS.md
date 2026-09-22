@@ -14,13 +14,13 @@ python backend/manage.py createsuperuser
 python backend/manage.py runserver
 ```
 
-The repository currently has no committed `.env.example`. Never commit real credentials. Use environment variables or a local ignored `.env` file.
+Never commit real credentials. Copy `.env.example` to `.env` for a local checklist; it contains variable names and placeholder values only.
 
 ## Production-required configuration
 
 Set `GENIUZLAB_SECRET_KEY`, `GENIUZLAB_ALLOWED_HOSTS`, `GENIUZLAB_DATABASE_URL`, `GENIUZLAB_CSRF_TRUSTED_ORIGINS`, and `GENIUZLAB_EMAIL_HOST` plus SMTP credentials. Keep `GENIUZLAB_DEBUG=False`. Use Postgres or another supported concurrent database, not SQLite.
 
-Optional integrations include Redis (`GENIUZLAB_REDIS_CACHE_URL`), Celery broker/result settings, payment provider keys, VTpass keys, and AI provider keys. `FEATURE_VTU_ENABLED` is false by default.
+Optional integrations include Redis (`GENIUZLAB_REDIS_CACHE_URL`), Celery broker/result settings, Paystack/Flutterwave keys, VTpass keys, and AI provider keys. `FEATURE_VTU_ENABLED` is false by default. Course checkout requires a configured Paystack or Flutterwave secret key; wallet funding remains feature-gated.
 
 ## Pre-deploy checks
 

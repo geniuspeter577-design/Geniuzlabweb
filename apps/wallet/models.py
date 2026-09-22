@@ -16,8 +16,15 @@ class Wallet(models.Model):
 
     def credit(self, amount, reference="", description=""):
         amount = Decimal(amount)
+        if amount <= 0:
+            raise ValueError("Wallet credits must be greater than zero")
         with transaction.atomic():
             wallet = Wallet.objects.select_for_update().get(pk=self.pk)
+            if reference and WalletTransaction.objects.filter(
+                wallet=wallet, reference=reference, type="credit"
+            ).exists():
+                self.balance = wallet.balance
+                return False
             wallet.balance += amount
             wallet.save(update_fields=["balance", "updated_at"])
             WalletTransaction.objects.create(
@@ -25,6 +32,7 @@ class Wallet(models.Model):
                 reference=reference, description=description,
             )
             self.balance = wallet.balance
+            return True
 
     def debit(self, amount, reference="", description=""):
         # select_for_update locks this wallet's row for the duration of the
@@ -34,8 +42,15 @@ class Wallet(models.Model):
         # insufficient-funds check against the same starting balance and
         # push it negative.
         amount = Decimal(amount)
+        if amount <= 0:
+            raise ValueError("Wallet debits must be greater than zero")
         with transaction.atomic():
             wallet = Wallet.objects.select_for_update().get(pk=self.pk)
+            if reference and WalletTransaction.objects.filter(
+                wallet=wallet, reference=reference, type="debit"
+            ).exists():
+                self.balance = wallet.balance
+                return False
             if amount > wallet.balance:
                 raise ValueError("Insufficient wallet balance")
             wallet.balance -= amount
@@ -45,6 +60,7 @@ class Wallet(models.Model):
                 reference=reference, description=description,
             )
             self.balance = wallet.balance
+            return True
 
 
 class WalletTransaction(models.Model):

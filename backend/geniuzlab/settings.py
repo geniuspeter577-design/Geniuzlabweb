@@ -305,23 +305,7 @@ PAYMENT_PROVIDERS = {
         "contract_code": os.environ.get("MONNIFY_CONTRACT_CODE", ""),
     },
 }
-
-
-# ---------------------------------------------------------------------------
-# Manual payment (bank transfer) — used for Academy course enrollment while
-# online payment gateways (Paystack/Flutterwave/Monnify above) are
-# temporarily disabled. Override any of these via environment variables
-# without touching code.
-# ---------------------------------------------------------------------------
-MANUAL_PAYMENT = {
-    "bank_name": os.environ.get("MANUAL_PAYMENT_BANK_NAME", "OPay"),
-    "account_name": os.environ.get("MANUAL_PAYMENT_ACCOUNT_NAME", "OTSAJE GENIUS PETER"),
-    "account_number": os.environ.get("MANUAL_PAYMENT_ACCOUNT_NUMBER", "9138955730"),
-}
-
-# WhatsApp number students are redirected to after submitting a payment claim.
-# Digits only, with country code, no leading + or 00 (wa.me format).
-ADMIN_WHATSAPP_NUMBER = os.environ.get("ADMIN_WHATSAPP_NUMBER", "2349138955730")
+FLUTTERWAVE_WEBHOOK_HASH = os.environ.get("FLUTTERWAVE_WEBHOOK_HASH", "")
 
 
 # ---------------------------------------------------------------------------

@@ -436,6 +436,15 @@ class EnrollmentPayment(models.Model):
         the payment approved and creating the Enrollment can never leave
         one without the other. get_or_create prevents a duplicate
         Enrollment if a payment is somehow approved twice."""
+        if self.status == "approved":
+            return Enrollment.objects.get_or_create(user=self.user, course=self.course)[0]
+        if self.status != "pending":
+            raise ValueError("Only pending payment claims can be approved.")
+        if reviewer is not None and not reviewer.is_staff:
+            raise PermissionError("Only staff users can approve payment claims.")
+        if self.amount != self.course.price:
+            raise ValueError("Payment amount does not match the course price.")
+
         with transaction.atomic():
             self.status = "approved"
             self.reviewed_at = timezone.now()
@@ -447,6 +456,12 @@ class EnrollmentPayment(models.Model):
         return enrollment
 
     def reject(self, reviewer=None, note=""):
+        if self.status == "rejected":
+            return
+        if self.status != "pending":
+            raise ValueError("Only pending payment claims can be rejected.")
+        if reviewer is not None and not reviewer.is_staff:
+            raise PermissionError("Only staff users can reject payment claims.")
         self.status = "rejected"
         self.reviewed_at = timezone.now()
         self.reviewed_by = reviewer

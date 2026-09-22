@@ -107,7 +107,7 @@ class EnrollmentPaymentAdmin(admin.ModelAdmin):
     list_filter = ("status", "course")
     search_fields = ("full_name", "email", "phone", "reference")
     readonly_fields = ("user", "course", "full_name", "email", "phone", "amount", "reference",
-                       "receipt", "created_at", "reviewed_at", "reviewed_by")
+                       "receipt", "status", "created_at", "reviewed_at", "reviewed_by")
     fields = ("user", "course", "full_name", "email", "phone", "amount", "reference", "receipt",
               "status", "admin_note", "created_at", "reviewed_at", "reviewed_by")
     actions = ["approve_payments", "reject_payments"]
@@ -132,7 +132,7 @@ class EnrollmentPaymentAdmin(admin.ModelAdmin):
             notify(
                 payment.user,
                 f"We couldn't verify your payment for {payment.course.title}. "
-                "Please reach out on WhatsApp with your receipt.",
+                "Please start a new online checkout attempt.",
                 link="/dashboard/", category="academy_update",
             )
             count += 1

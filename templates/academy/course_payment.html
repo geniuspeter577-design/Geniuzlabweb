@@ -7,108 +7,31 @@
         <p>{{ course.icon }} {{ course.title }} — ₦{{ course.price }}</p>
     </div>
 
-    {% if pending %}
-    <div class="glass-card" style="max-width:560px;margin-bottom:20px;">
-        <p><i class="fas fa-hourglass-half"></i>&nbsp; You already submitted a payment claim for this course on
-        {{ pending.created_at|date:"M d, Y H:i" }}. It's awaiting verification — no need to pay again.</p>
-        <a href="{% url 'payment_whatsapp_redirect' pending.pk %}" class="btn-outline btn-sm" style="margin-top:10px;">
-            Message us on WhatsApp
-        </a>
-    </div>
-    {% endif %}
-
     <div class="glass-card" style="max-width:560px;margin-bottom:24px;">
-        <h3 style="margin-top:0;">Bank Transfer Details</h3>
+        <h3 style="margin-top:0;">Secure Online Checkout</h3>
         <div class="info-rows">
-            <div class="info-row"><span class="info-label">Bank Name</span><span>{{ bank.bank_name }}</span></div>
-            <div class="info-row"><span class="info-label">Account Name</span><span>{{ bank.account_name }}</span></div>
-            <div class="info-row">
-                <span class="info-label">Account Number</span>
-                <span style="display:flex;align-items:center;gap:10px;">
-                    <span id="acctNumber">{{ bank.account_number }}</span>
-                    <button type="button" class="btn-outline btn-sm" id="copyAcctBtn" data-copy="{{ bank.account_number }}" style="padding:4px 10px;">
-                        <i class="fas fa-copy"></i> Copy
-                    </button>
-                </span>
-            </div>
             <div class="info-row"><span class="info-label">Amount</span><span>₦{{ course.price }}</span></div>
             <div class="info-row"><span class="info-label">Course</span><span>{{ course.title }}</span></div>
         </div>
         <p style="color:var(--gl-text-muted);font-size:13px;margin-top:14px;">
-            Transfer the exact amount above, then fill the form below and click
-            <strong>I HAVE MADE PAYMENT</strong>.
+            Choose a provider below. Your enrollment is activated only after the provider payment is
+            verified by the server.
         </p>
     </div>
 
     <div class="glass-card" style="max-width:560px;">
-        <h3 style="margin-top:0;">I Have Made Payment</h3>
-        <form method="POST" action="{% url 'submit_payment' course.slug %}" class="form-box" enctype="multipart/form-data">
+        <h3 style="margin-top:0;">Choose Payment Provider</h3>
+        <form method="POST" action="{% url 'initiate_course_payment' course.slug %}" class="form-box">
             {% csrf_token %}
             <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" name="full_name" placeholder="Your full name" required
-                       value="{{ request.user.get_full_name|default:request.user.username }}">
+                <label for="provider">Payment Provider</label>
+                <select name="provider" id="provider" required>
+                    <option value="paystack">Paystack</option>
+                    <option value="flutterwave">Flutterwave</option>
+                </select>
             </div>
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" name="email" placeholder="you@example.com" required
-                       value="{{ request.user.email }}">
-            </div>
-            <div class="form-group">
-                <label>Phone</label>
-                <input type="text" name="phone" placeholder="e.g. 08012345678" required>
-            </div>
-            <input type="hidden" name="amount" value="{{ course.price }}">
-            <div class="form-group">
-                <label>Reference (optional)</label>
-                <input type="text" name="reference" placeholder="Transfer reference">
-            </div>
-            <div class="form-group">
-                <label>Receipt Upload (optional)</label>
-                <input type="file" name="receipt" accept="image/*,application/pdf">
-            </div>
-            <button type="submit" class="btn-primary">I HAVE MADE PAYMENT</button>
+            <button type="submit" class="btn-primary">Continue to Secure Checkout</button>
         </form>
     </div>
 </section>
-{% endblock %}
-{% block extra_js %}
-<script>
-(function () {
-    const btn = document.getElementById("copyAcctBtn");
-    if (!btn) return;
-    const original = btn.innerHTML;
-
-    function done(success) {
-        btn.innerHTML = success
-            ? '<i class="fas fa-check"></i> Copied'
-            : '<i class="fas fa-times"></i> Copy failed';
-        setTimeout(function () { btn.innerHTML = original; }, 1800);
-    }
-
-    function fallbackCopy(text) {
-        const textarea = document.createElement("textarea");
-        textarea.value = text;
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-        document.body.appendChild(textarea);
-        textarea.focus();
-        textarea.select();
-        let ok = false;
-        try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
-        document.body.removeChild(textarea);
-        return ok;
-    }
-
-    btn.addEventListener("click", function () {
-        const value = btn.getAttribute("data-copy") || "";
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(value).then(function () { done(true); })
-                .catch(function () { done(fallbackCopy(value)); });
-        } else {
-            done(fallbackCopy(value));
-        }
-    });
-})();
-</script>
 {% endblock %}

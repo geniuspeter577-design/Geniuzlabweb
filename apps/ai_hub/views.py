@@ -7,6 +7,7 @@ from django.core.files.base import ContentFile
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
+from django_ratelimit.decorators import ratelimit
 
 from .chat_provider import ChatGenerationError, ChatProviderNotConfigured, is_chat_configured, stream_chat_reply
 from .models import ChatConversation, ChatMessage, GeneratedImage, GeneratedVideo
@@ -62,6 +63,7 @@ def image_generator(request):
 
 @login_required
 @require_POST
+@ratelimit(key="user", rate="20/d", method="POST", block=True)
 def image_generate_api(request):
     prompt = _read_prompt(request)
     if not prompt:
@@ -145,6 +147,7 @@ def video_generator(request):
 
 @login_required
 @require_POST
+@ratelimit(key="user", rate="10/d", method="POST", block=True)
 def video_generate_api(request):
     prompt = _read_prompt(request)
     if not prompt:
@@ -288,6 +291,7 @@ def chat_conversation(request, pk):
 
 @login_required
 @require_POST
+@ratelimit(key="user", rate="60/h", method="POST", block=True)
 def chat_send_api(request, pk):
     """Streams the assistant's reply back as it's generated (Server-Sent
     Events), so the UI can render it as it arrives instead of waiting

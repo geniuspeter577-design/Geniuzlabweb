@@ -1,17 +1,15 @@
 from django.urls import path
 from . import views
 
-# NOTE: initiate_payment is the wallet-funding UI ("Fund Wallet"), which is
-# temporarily disabled — see settings.FEATURE_VTU_ENABLED. It redirects to
-# the wallet page (which stays live for viewing balance/history) instead
-# of 404ing, since that's a real page users can still reach it from.
-# transaction_history and payment_receipt are generic, non-VTU views and
-# are left fully enabled. views.py is untouched — setting
-# FEATURE_VTU_ENABLED = True fully restores wallet funding.
+# Wallet funding remains behind the existing feature flag. Course checkout,
+# callbacks, webhooks, history and receipts are independent payment flows.
 from geniuzlab.feature_flags import vtu_feature_gate_redirect
 
 urlpatterns = [
     path('', views.transaction_history, name='transaction_history'),
+    path('course/<slug:slug>/pay/', views.initiate_course_payment, name='initiate_course_payment'),
+    path('callback/<str:provider>/', views.payment_callback, name='payment_callback'),
+    path('webhooks/<str:provider>/', views.payment_webhook, name='payment_webhook'),
     path(
         'pay/',
         vtu_feature_gate_redirect(

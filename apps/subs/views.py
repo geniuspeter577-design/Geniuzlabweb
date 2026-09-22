@@ -22,6 +22,11 @@ def subscribe(request, pk):
     wallet, _ = Wallet.objects.get_or_create(user=request.user)
     try:
         with transaction.atomic():
+            if UserSubscription.objects.select_for_update().filter(
+                user=request.user, plan=plan, status="active"
+            ).exists():
+                messages.info(request, f"You already have an active {plan.name} subscription.")
+                return redirect("subs")
             wallet.debit(plan.price, description=f"Subscription: {plan.name}")
             UserSubscription.objects.create(user=request.user, plan=plan, status="active")
         messages.success(request, f"Subscribed to {plan.name}.")

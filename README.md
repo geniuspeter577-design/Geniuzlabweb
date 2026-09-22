@@ -10,8 +10,8 @@ not production-ready yet. The highest-priority release blockers are:
 - migration consistency is now clean after generating the five pending
   migrations for `academy`, `automation`, `konnect`, `motion`, and
   `notifications`;
-- payment checkout/webhooks are not implemented, so no real gateway charge or
-  verified wallet credit occurs; and
+- provider credentials and live sandbox verification are still required before
+  payment checkout can be enabled in production; and
 - deployment still needs a real environment, database, static collection,
   email transport, and provider smoke tests.
 
@@ -75,18 +75,15 @@ Then visit `http://127.0.0.1:8000/`.
 
 ## Payments — connecting real gateways
 
-Payments currently provide transaction records, receipts, and admin-facing
-status scaffolding. They do not yet perform a real checkout or verified wallet
-credit, even with provider keys configured — new transactions are recorded as
-`pending` until a provider lifecycle is implemented.
+Course checkout now creates a server-side transaction, initializes Paystack or
+Flutterwave checkout, and fulfills enrollment only after server-side
+verification. Configure the provider secret/public keys and webhook endpoint
+before production use. Wallet funding uses the same verification pattern but
+remains behind `FEATURE_VTU_ENABLED`.
 
-To go live with a provider, set its keys in `.env` (see `.env.example`),
-then implement the actual checkout call in
-`payments/views.py::initiate_payment` (redirect to the provider's hosted
-checkout, or call their charge API) and add a webhook/callback view that
-authenticates the event, transitions the transaction idempotently, and credits
-the wallet only after verified success. The `Transaction` model, admin,
-history page and receipt page are foundations, not a complete integration.
+Manual bank-transfer claims and WhatsApp payment confirmation are no longer
+accepted for new Academy enrollment. Historical `EnrollmentPayment` records
+remain in the schema for data preservation.
 
 ## AI Hub — Chat, Image, Video
 

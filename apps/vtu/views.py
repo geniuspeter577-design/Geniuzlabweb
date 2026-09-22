@@ -1,7 +1,9 @@
 import json
+from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
@@ -26,29 +28,34 @@ def vtu_home(request):
 def _process_purchase(request, service_type, service_id, amount, recipient,
                        variation_code=None, billers_code=None, recipient_name="", extra=None):
     """Debit wallet, call VTpass, reconcile the result. Returns the VTUOrder."""
-    wallet, _ = Wallet.objects.get_or_create(user=request.user)
-
-    if wallet.balance < amount:
-        messages.error(request, "Insufficient wallet balance. Please fund your wallet first.")
+    if amount <= 0:
+        messages.error(request, "The purchase amount must be greater than zero.")
         return None
 
+    wallet, _ = Wallet.objects.get_or_create(user=request.user)
+
     request_id = services.generate_request_id()
-
-    order = VTUOrder.objects.create(
-        user=request.user,
-        service_type=service_type,
-        service_id=service_id,
-        variation_code=variation_code or "",
-        recipient=recipient,
-        recipient_name=recipient_name,
-        amount=amount,
-        request_id=request_id,
-        status=VTUOrder.STATUS_PENDING,
-    )
-
-    # Debit up front so the balance can't be double-spent across concurrent
-    # requests; reversed automatically below if the provider call fails.
-    wallet.debit(amount, reference=request_id, description=f"{order.get_service_type_display()}: {recipient}")
+    try:
+        with transaction.atomic():
+            order = VTUOrder.objects.create(
+                user=request.user,
+                service_type=service_type,
+                service_id=service_id,
+                variation_code=variation_code or "",
+                recipient=recipient,
+                recipient_name=recipient_name,
+                amount=amount,
+                request_id=request_id,
+                status=VTUOrder.STATUS_PENDING,
+            )
+            wallet.debit(
+                amount,
+                reference=request_id,
+                description=f"{order.get_service_type_display()}: {recipient}",
+            )
+    except ValueError:
+        messages.error(request, "Insufficient wallet balance. Please fund your wallet first.")
+        return None
 
     try:
         response = services.purchase(
@@ -68,11 +75,14 @@ def _process_purchase(request, service_type, service_id, amount, recipient,
         messages.error(request, "VTU purchases aren't configured yet — the site owner needs to add VTpass API keys.")
         return order
     except Exception as exc:  # network error, timeout, etc.
-        order.status = VTUOrder.STATUS_FAILED
+        order.status = VTUOrder.STATUS_PENDING
         order.response_message = f"Network/provider error: {exc}"
         order.save(update_fields=["status", "response_message", "updated_at"])
-        wallet.credit(amount, reference=request_id, description=f"Refund: {order.get_service_type_display()} failed")
-        messages.error(request, "We couldn't reach the VTU provider. Your wallet has been refunded.")
+        messages.warning(
+            request,
+            "We couldn't confirm the provider response. Your order remains pending; "
+            "check its status before trying again.",
+        )
         return order
 
     status = services.transaction_status(response)
@@ -83,15 +93,30 @@ def _process_purchase(request, service_type, service_id, amount, recipient,
     order.provider_transaction_id = str(txn.get("transactionId", ""))
     order.save()
 
-    if status == VTUOrder.STATUS_FAILED:
-        wallet.credit(amount, reference=request_id, description=f"Refund: {order.get_service_type_display()} failed")
-        messages.error(request, f"Purchase failed: {order.response_message}. Your wallet has been refunded.")
+    if status in (VTUOrder.STATUS_FAILED, VTUOrder.STATUS_REVERSED):
+        wallet.credit(amount, reference=request_id, description=f"Refund: {order.get_service_type_display()} {status}")
+        messages.error(request, f"Purchase {order.get_status_display().lower()}: {order.response_message}. Your wallet has been refunded.")
     elif status == VTUOrder.STATUS_SUCCESSFUL:
         messages.success(request, f"{order.get_service_type_display()} purchase successful.")
     else:
         messages.warning(request, "Your purchase is processing. Check order history for the final status shortly.")
 
     return order
+
+
+def _verified_variation_amount(service_id, variation_code, submitted_amount):
+    data = services.get_variations(service_id)
+    variations = (data.get("content") or {}).get("variations", [])
+    selected = next(
+        (item for item in variations if str(item.get("variation_code")) == str(variation_code)),
+        None,
+    )
+    if not selected:
+        raise ValueError("The selected provider plan is no longer available.")
+    provider_amount = Decimal(str(selected.get("variation_amount", "0")))
+    if provider_amount <= 0 or provider_amount != Decimal(str(submitted_amount)):
+        raise ValueError("The selected plan price changed. Please reload and try again.")
+    return provider_amount
 
 
 # ---------------------------------------------------------------------------
@@ -126,22 +151,28 @@ def buy_data(request):
     if request.method == "POST":
         form = DataForm(request.POST)
         if form.is_valid():
-            order = _process_purchase(
-                request,
-                service_type=VTUOrder.SERVICE_DATA,
-                service_id=form.cleaned_data["network"],
-                amount=form.cleaned_data["amount"],
-                recipient=form.cleaned_data["phone"],
-                variation_code=form.cleaned_data["variation_code"],
-                billers_code=form.cleaned_data["phone"],
-            )
-            if order:
-                return redirect("vtu_order_detail", pk=order.pk)
+            try:
+                amount = _verified_variation_amount(
+                    form.cleaned_data["network"], form.cleaned_data["variation_code"], form.cleaned_data["amount"]
+                )
+            except (ValueError, services.VTUNotConfigured, services.VTUProviderError) as exc:
+                form.add_error("amount", str(exc))
+            else:
+                order = _process_purchase(
+                    request, service_type=VTUOrder.SERVICE_DATA,
+                    service_id=form.cleaned_data["network"], amount=amount,
+                    recipient=form.cleaned_data["phone"],
+                    variation_code=form.cleaned_data["variation_code"],
+                    billers_code=form.cleaned_data["phone"],
+                )
+                if order:
+                    return redirect("vtu_order_detail", pk=order.pk)
     else:
         form = DataForm()
     return render(request, "vtu/data.html", {"form": form})
 
 
+@login_required
 def api_variations(request, service_id):
     """JSON list of purchasable plans for a service — used by the data/cable pages' JS."""
     try:
@@ -163,18 +194,23 @@ def buy_cable(request):
     if request.method == "POST":
         form = CablePurchaseForm(request.POST)
         if form.is_valid():
-            order = _process_purchase(
-                request,
-                service_type=VTUOrder.SERVICE_CABLE,
-                service_id=form.cleaned_data["provider"],
-                amount=form.cleaned_data["amount"],
-                recipient=form.cleaned_data["smartcard_number"],
-                variation_code=form.cleaned_data["variation_code"],
-                billers_code=form.cleaned_data["smartcard_number"],
-                recipient_name=request.POST.get("recipient_name", ""),
-            )
-            if order:
-                return redirect("vtu_order_detail", pk=order.pk)
+            try:
+                amount = _verified_variation_amount(
+                    form.cleaned_data["provider"], form.cleaned_data["variation_code"], form.cleaned_data["amount"]
+                )
+            except (ValueError, services.VTUNotConfigured, services.VTUProviderError) as exc:
+                form.add_error("amount", str(exc))
+            else:
+                order = _process_purchase(
+                    request, service_type=VTUOrder.SERVICE_CABLE,
+                    service_id=form.cleaned_data["provider"], amount=amount,
+                    recipient=form.cleaned_data["smartcard_number"],
+                    variation_code=form.cleaned_data["variation_code"],
+                    billers_code=form.cleaned_data["smartcard_number"],
+                    recipient_name=request.POST.get("recipient_name", ""),
+                )
+                if order:
+                    return redirect("vtu_order_detail", pk=order.pk)
     else:
         form = CablePurchaseForm()
     return render(request, "vtu/cable.html", {"form": form, "verify_form": CableVerifyForm()})
@@ -311,12 +347,21 @@ def order_requery(request, pk):
         return redirect("vtu_order_detail", pk=pk)
 
     new_status = services.transaction_status(response)
-    if new_status != order.status:
-        if new_status == VTUOrder.STATUS_FAILED and order.status == VTUOrder.STATUS_PENDING:
+    with transaction.atomic():
+        locked_order = VTUOrder.objects.select_for_update().get(pk=order.pk)
+        if locked_order.status == VTUOrder.STATUS_PENDING and new_status in (
+            VTUOrder.STATUS_FAILED, VTUOrder.STATUS_REVERSED,
+        ):
             wallet, _ = Wallet.objects.get_or_create(user=request.user)
-            wallet.credit(order.amount, reference=order.request_id, description="Refund: order failed on requery")
-        order.status = new_status
-        order.raw_response = json.dumps(response)[:9000]
-        order.save()
+            wallet.credit(
+                locked_order.amount,
+                reference=locked_order.request_id,
+                description=f"Refund: order {new_status} on requery",
+            )
+        if locked_order.status != new_status:
+            locked_order.status = new_status
+            locked_order.raw_response = json.dumps(response)[:9000]
+            locked_order.save(update_fields=["status", "raw_response", "updated_at"])
+        order = locked_order
     messages.info(request, f"Order status: {order.get_status_display()}")
     return redirect("vtu_order_detail", pk=pk)

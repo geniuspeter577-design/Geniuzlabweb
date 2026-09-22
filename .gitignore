@@ -5,3 +5,4 @@ ruffcache/
 venv/
 .env
 *sqlite3
+staticfiles/

@@ -1,14 +1,10 @@
-from urllib.parse import quote
-
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Avg, Count, Q
-from django.http import Http404
+from django.http import Http404, HttpResponseGone
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.notifications.utils import notify
-from .forms import EnrollmentPaymentForm
 from .models import (
     Assignment, AssignmentSubmission, Certificate, CommunityPost,
     Course, Enrollment, EnrollmentPayment, Lesson, LessonProgress, Module,
@@ -78,98 +74,33 @@ def enroll_course(request, slug):
 
 @login_required
 def course_payment(request, slug):
-    """Shows the manual bank-transfer details for a course — the temporary
-    replacement for the Paystack/Flutterwave/Monnify checkout while those
-    gateways are disabled."""
+    """Compatibility entry point for the online course checkout."""
     course = get_object_or_404(Course, slug=slug)
-
+    if not course.is_published and not request.user.is_staff:
+        raise Http404("Course not found.")
     if Enrollment.objects.filter(user=request.user, course=course).exists():
         messages.info(request, f"You're already enrolled in {course.title}.")
         return redirect("dashboard")
-
-    pending = EnrollmentPayment.objects.filter(
-        user=request.user, course=course, status="pending"
-    ).first()
-
-    # A student with an existing pending claim can still see its status even
-    # if the course was unpublished afterwards — this only blocks someone
-    # starting a brand-new payment on an unpublished course.
-    if not pending and not course.is_published and not request.user.is_staff:
-        raise Http404("Course not found.")
-
-    return render(request, "academy/course_payment.html", {
-        "course": course,
-        "bank": settings.MANUAL_PAYMENT,
-        "pending": pending,
-    })
+    if request.method == "POST":
+        from apps.payments.views import initiate_course_payment
+        return initiate_course_payment(request, slug)
+    return render(request, "academy/course_payment.html", {"course": course})
 
 
 @login_required
 def submit_payment(request, slug):
-    """'I HAVE MADE PAYMENT' step: records the student's claim, saves any
-    receipt, then sends them on to WhatsApp with a pre-filled message to the
-    admin, exactly as instructed. The claim stays visible to the student and
-    is what shows up in the admin's Payment Requests panel."""
-    course = get_object_or_404(Course, slug=slug)
-
-    if request.method != "POST":
-        return redirect("course_payment", slug=slug)
-
-    # Defense in depth: never record a brand-new payment claim against an
-    # unpublished course, even if this endpoint is hit directly.
-    if not course.is_published and not request.user.is_staff:
-        raise Http404("Course not found.")
-
-    form = EnrollmentPaymentForm(request.POST, request.FILES)
-    if not form.is_valid():
-        for field_errors in form.errors.values():
-            for error in field_errors:
-                messages.error(request, error)
-        return redirect("course_payment", slug=slug)
-
-    payment = form.save(commit=False)
-    payment.user = request.user
-    payment.course = course
-    payment.save()
-
-    notify(
-        request.user,
-        f"We received your payment claim for {course.title}. "
-        "We'll confirm as soon as it's verified.",
-        link="/dashboard/", category="academy_update",
+    """Legacy manual-payment endpoint retained only for old bookmarks."""
+    return HttpResponseGone(
+        "Manual payment claims are no longer accepted. Use the online course checkout."
     )
-
-    messages.success(
-        request,
-        "Payment claim submitted! Continue to WhatsApp to notify us directly for faster verification.",
-    )
-    return redirect("payment_whatsapp_redirect", pk=payment.pk)
 
 
 @login_required
 def payment_whatsapp_redirect(request, pk):
-    """Confirmation screen shown right after submission — auto-continues to
-    the admin's WhatsApp with the message pre-filled, with a manual button
-    as a fallback for mobile popup blockers."""
-    payment = get_object_or_404(EnrollmentPayment, pk=pk, user=request.user)
-
-    message = (
-        "Hello GeniuzLab,\n\n"
-        "I have completed payment.\n\n"
-        f"Name: {payment.full_name}\n"
-        f"Email: {payment.email}\n"
-        f"Phone: {payment.phone}\n"
-        f"Course: {payment.course.title}\n"
-        f"Amount: {payment.amount}\n\n"
-        "Please verify my payment."
+    """Legacy manual-payment URL; historical records remain preserved."""
+    return HttpResponseGone(
+        "Manual payment confirmation is no longer available. Use online checkout."
     )
-    whatsapp_url = f"https://wa.me/{settings.ADMIN_WHATSAPP_NUMBER}?text={quote(message)}"
-
-    return render(request, "academy/payment_confirmation.html", {
-        "course": payment.course,
-        "payment": payment,
-        "whatsapp_url": whatsapp_url,
-    })
 
 
 @login_required

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django import forms
 
 # Applied to every network/provider-style ChoiceField so the frontend
@@ -58,7 +60,7 @@ class DataForm(forms.Form):
     network = forms.ChoiceField(choices=NETWORK_DATA_CHOICES, widget=forms.Select(attrs=GLAB_SELECT_ATTRS))
     phone = forms.CharField(max_length=15, widget=forms.TextInput(attrs={"placeholder": "08012345678"}))
     variation_code = forms.CharField(widget=forms.HiddenInput())
-    amount = forms.DecimalField(max_digits=10, decimal_places=2, widget=forms.HiddenInput())
+    amount = forms.DecimalField(min_value=Decimal("0.01"), max_digits=10, decimal_places=2, widget=forms.HiddenInput())
 
 
 class CableVerifyForm(forms.Form):
@@ -70,7 +72,7 @@ class CablePurchaseForm(forms.Form):
     provider = forms.ChoiceField(choices=CABLE_CHOICES, widget=forms.Select(attrs=GLAB_SELECT_ATTRS))
     smartcard_number = forms.CharField(max_length=20)
     variation_code = forms.CharField()
-    amount = forms.DecimalField(max_digits=10, decimal_places=2, widget=forms.HiddenInput())
+    amount = forms.DecimalField(min_value=Decimal("0.01"), max_digits=10, decimal_places=2, widget=forms.HiddenInput())
 
 
 class ElectricityVerifyForm(forms.Form):
